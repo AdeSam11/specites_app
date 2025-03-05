@@ -22,6 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
+SECRET_KEY = "5ynxk@*9=ux!s6+k@!@d2_=!+8dh#%^e45k0s0s@0#ilc-j9-z"
 DEBUG = True
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost").split(",")
