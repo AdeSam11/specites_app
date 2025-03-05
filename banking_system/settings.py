@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DJANGO_DEBUG", "False") == "True"
+DEBUG = True
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost").split(",")
 
@@ -163,3 +163,5 @@ MESSAGE_TAGS = {
     messages.ERROR: "error",
     messages.SUCCESS: "success",
 }
+
+CSRF_TRUSTED_ORIGINS = ["https://specites-web-app.onrender.com"]
