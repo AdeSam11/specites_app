@@ -155,7 +155,7 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 
 # NOWPayments Configuration
 NOWPAYMENTS_API_KEY = os.getenv("NOWPAYMENTS_API_KEY")
-NOWPAYMENTS_CALLBACK_URL = "https://4cd1-102-91-78-154.ngrok-free.app/transactions/webhook/"
+NOWPAYMENTS_CALLBACK_URL = "https://specites-web-app.onrender.com/transactions/webhook/"
 
 from django.contrib.messages import constants as messages
 
