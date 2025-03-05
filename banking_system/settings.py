@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DJANGO_DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "https://4cd1-102-91-78-154.ngrok-free.app").split()
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "specites-web-app.onrender.com").split(",")
 
 LOGIN_REDIRECT_URL = '/'
 
