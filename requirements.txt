@@ -18,3 +18,4 @@ psycopg2-binary==2.9.9  # PostgreSQL
 
 python-dotenv
 dj-database-url
+gunicorn
