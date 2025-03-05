@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "5ynxk@*9=ux!s6+k@!@d2_=!+8dh#%^e45k0s0s@0#ilc-j9-z"
 DEBUG = True
 
-ALLOWED_HOSTS = [host.strip() for host in os.getenv("ALLOWED_HOSTS", "localhost").split(",")]
+ALLOWED_HOSTS = ["specites-web-app.onrender.com", "localhost", "127.0.0.1"]
 
 LOGIN_REDIRECT_URL = '/'
 
