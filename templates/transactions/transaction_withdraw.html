@@ -1,0 +1,73 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="container mx-auto my-12 px-6">
+    <div class="bg-white p-6 rounded-2xl shadow-md max-w-md mx-auto">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Withdraw USDT</h2>
+
+        <!-- Display Django messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="p-4 mb-4 text-white rounded-lg {% if message.tags == 'error' %}bg-red-500{% else %}bg-green-500{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Error Message for JavaScript Validation -->
+        <div id="error-message" class="hidden p-4 mb-4 text-white bg-red-500 rounded-lg"></div>
+
+        <form method="POST" action="{% url 'transactions:withdraw_money' %}" id="withdraw-form">
+            {% csrf_token %}
+
+            <label class="block text-gray-700">Wallet Address (TRC20)</label>
+            <input type="text" name="wallet_address" id="wallet_address" class="w-full border rounded-lg p-2 mb-4" required>
+
+            <label class="block text-gray-700">Amount (Min: $10)</label>
+            <input type="number" name="amount" min="10" step="0.01" class="w-full border rounded-lg p-2 mb-4" required>
+
+            <label class="block text-gray-700">Withdrawal Password</label>
+            <input type="password" name="withdrawal_password" class="w-full border rounded-lg p-2 mb-2" required>
+
+            <!-- Link to create a withdrawal password -->
+            <p class="text-sm text-gray-600 mb-4">
+                Don't have a withdrawal password? 
+                <a href="{% url 'transactions:create_withdrawal_password' %}" class="text-blue-500 underline">
+                    Create one here
+                </a>
+            </p>
+
+            <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded-lg w-full">Withdraw</button>
+        </form>
+
+        <!-- Withdrawal History Button -->
+        <div class="mt-4 text-center">
+            <a href="{% url 'transactions:withdrawal_history' %}" class="bg-gray-700 text-white px-4 py-2 rounded-lg w-full inline-block">
+                View Withdrawal History
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("withdraw-form");
+    const errorMessage = document.getElementById("error-message");
+    const walletAddressInput = document.getElementById("wallet_address");
+
+    form.addEventListener("submit", function (event) {
+        const walletAddress = walletAddressInput.value.trim();
+        const tronAddressPattern = /^T[a-zA-Z0-9]{33}$/;
+
+        if (!tronAddressPattern.test(walletAddress)) {
+            event.preventDefault();  // Stop form submission
+            errorMessage.textContent = "Invalid TRC20 wallet address. Please enter a valid address.";
+            errorMessage.classList.remove("hidden");  // Show error message
+        } else {
+            errorMessage.classList.add("hidden");  // Hide error message if input is valid
+        }
+    });
+});
+</script>
+
+{% endblock %}

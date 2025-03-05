@@ -1,0 +1,26 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mx-auto my-12 px-6">
+    <div class="bg-white p-6 rounded-2xl shadow-md max-w-md mx-auto">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Deposit USDT</h2>
+        <form method="POST" action="{% url 'transactions:deposit_money' %}">
+            {% csrf_token %}
+            <label for="amount" class="block text-gray-700">Amount (Min: $10)</label>
+            <input type="number" name="amount" id="amount" min="10" step="0.01"
+                class="w-full border rounded-lg p-2 mb-4" required>
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg w-full">
+                Proceed to Payment
+            </button>
+        </form>
+
+        <!-- View Deposit History Button -->
+        <div class="mt-4 text-center">
+            <a href="{% url 'transactions:deposit_history' %}" class="bg-gray-700 text-white px-4 py-2 rounded-lg w-full inline-block">
+                View Deposit History
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block head_title %}Specites{% endblock %}
+
+{% block content %}
+<div class="container mx-auto my-12 px-6">
+
+    <!-- Hero Section -->
+    <div class="flex flex-col md:flex-row items-center">
+        <div class="w-full lg:w-1/2 text-center">
+            <h1 style="font-size: 12rem" class="font-black text-blue-900 text-opacity-50">&#x20B1;&#x20B1;</h1>
+        </div>
+        <div class="w-full lg:w-1/2 bg-white p-6 rounded-2xl shadow-md">
+            <h1 class="font-bold text-4xl my-4">Welcome to Specites</h1>
+            <p class="leading-normal mb-4 text-gray-700">
+                Manage your investments and finances with ease. View your balances, track your investments, and join our top investors.
+            </p>
+        </div>
+    </div>
+
+    <!-- Financial Overview Section -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mt-10">
+        
+        <!-- Withdrawable Balance -->
+        <div class="bg-gray-800 text-white p-6 rounded-xl shadow-md">
+            <h2 class="text-xl font-semibold">Withdrawable Balance</h2>
+            <p class="text-2xl font-bold mt-2">${{ request.user.account_profile.withdrawable_balance }}</p>
+            <div class="mt-4">
+                <a href="{% url 'transactions:deposit_money' %}" class="inline-block bg-blue-500 px-4 py-2 rounded text-white mr-2">Deposit</a>
+                <a href="{% url 'transactions:withdraw_money' %}" class="inline-block bg-red-500 px-4 py-2 rounded text-white">Withdraw</a>
+            </div>
+        </div>
+
+        <!-- Ongoing Investment Balance -->
+        <div class="bg-gray-800 text-white p-6 rounded-xl shadow-md">
+            <h2 class="text-xl font-semibold">Ongoing Investment Balance</h2>
+            <p class="text-2xl font-bold mt-2">${{ request.user.account_profile.ongoing_investment_balance }}</p>
+        </div>
+
+        <!-- Total Amount Invested -->
+        <div class="bg-gray-800 text-white p-6 rounded-xl shadow-md">
+            <h2 class="text-xl font-semibold">Total Amount Invested</h2>
+            <p class="text-2xl font-bold mt-2">${{ request.user.account_profile.total_invested }}</p>
+        </div>
+
+        <!-- Total Amount Yielded -->
+        <div class="bg-gray-800 text-white p-6 rounded-xl shadow-md">
+            <h2 class="text-xl font-semibold">Total Amount Yielded</h2>
+            <p class="text-2xl font-bold mt-2">${{ request.user.account_profile.total_yielded }}</p>
+        </div>
+    </div>
+
+    <!-- Top 10 Investors Section -->
+    <div class="mt-10 bg-white p-6 rounded-2xl shadow-md">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Top 10 Investors</h2>
+        <table class="w-full border-collapse border border-gray-300">
+            <thead>
+                <tr class="bg-gray-800 text-white">
+                    <th class="p-3 text-left">#</th>
+                    <th class="p-3 text-left">Investor</th>
+                    <th class="p-3 text-left">Total Invested</th>
+                    <th class="p-3 text-left">Country</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for investor in top_investors %}
+                <tr class="border-b border-gray-300">
+                    <td class="p-3">{{ forloop.counter }}</td>
+                    <td class="p-3">{{ investor.user.get_full_name }}</td>
+                    <td class="p-3">${{ investor.total_invested }}</td>
+                    <td class="p-3">{{ investor.user.country }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="p-3 text-center text-gray-500">No investors found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% endblock %}

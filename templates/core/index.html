@@ -1,0 +1,123 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<div class="bg-gray-900 text-white min-h-screen">
+    <!-- Hero Section -->
+    <section class="text-center py-20 px-6">
+        <h1 class="text-4xl md:text-6xl font-bold animate-fade-in">
+            Invest Smarter and Safely with 
+            <a href="{% url 'home' %}" 
+               class="text-blue-500 transition-transform duration-300 ease-in-out hover:scale-110 inline-block">
+                Specites
+            </a>
+        </h1>
+        <p class="text-lg md:text-xl mt-4 opacity-80">Smart Investing. Secure. Profitable. Zero Risk.</p>
+        <p class="mt-6 opacity-80 max-w-3xl mx-auto text-gray-300">
+            At Specites, we help investors grow their wealth through arbitrage trading using our high-tech AI and cutting-edge software with zero risk. 
+            Our AI-powered arbitrage trading software allows you to earn consistent, high-yield returns with zero risk. We achieve this by leveraging 
+            price discrepancies in stocks and crypto markets across multiple platforms to generate guaranteed profits, ensuring you receive stable, 
+            fixed, and secure returns on your investments. <a href="{% url 'accounts:user_registration' %}" class="text-blue-400 hover:underline">Join Now</a>
+        </p>
+
+        <p class="mt-4 opacity-80 max-w-3xl mx-auto text-gray-300">
+            If you are curious as to how your money is used and why we are able to offer high returns, check out our 
+            <a href="{% url 'about' %}" class="text-blue-400 hover:underline">FAQ</a> or the 
+            <a href="{% url 'about' %}" class="text-blue-400 hover:underline">About</a> section.
+        </p>
+        <div class="mt-10 space-x-4">
+            <a href="{% url 'accounts:user_registration' %}" class="bg-blue-500 px-6 py-3 rounded-lg text-lg font-semibold shadow-md hover:bg-blue-600 transition-all">Get Started</a>
+            <a href="{% url 'accounts:user_login' %}" class="border border-blue-500 px-6 py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-all">Sign In</a>
+        </div>
+    </section>
+
+    <!-- Why Choose Us Section -->
+    <section class="py-16 bg-gray-800 px-6">
+        <h2 class="text-3xl font-bold text-center">Why Choose <span class="text-blue-500">Specites?</span></h2>
+        <div class="grid md:grid-cols-3 gap-8 mt-10">
+            <div class="bg-gray-700 p-6 rounded-xl shadow-lg hover:scale-105 transition-all">
+                <h3 class="text-xl font-semibold">✅ High Returns, Zero Risk</h3>
+                <p class="mt-2 opacity-80">We offer the best and highest returns on your money at zero risk to you. Guaranteed earnings up to <span class="text-blue-400 font-bold">600%</span> in 2 years.</p>
+            </div>
+            <div class="bg-gray-700 p-6 rounded-xl shadow-lg hover:scale-105 transition-all">
+                <h3 class="text-xl font-semibold">✅ AI-Powered Arbitrage</h3>
+                <p class="mt-2 opacity-80">Our expert traders, cutting edge software and AI-powered algorithms execute risk-free arbitrage opportunities across multiple financial markets, ensuring steady profits.</p>
+            </div>
+            <div class="bg-gray-700 p-6 rounded-xl shadow-lg hover:scale-105 transition-all">
+                <h3 class="text-xl font-semibold">✅ Transparency & Trust</h3>
+                <p class="mt-2 opacity-80">We operate with full transparency, letting you know how your money is used, providing real-time insights into our trades and earnings; You can track your investments and profits seamlessly.</p>
+            </div>
+            <div class="bg-gray-700 p-6 rounded-xl shadow-lg hover:scale-105 transition-all">
+                <h3 class="text-xl font-semibold">✅ Secure, Fast & Reliable Payouts</h3>
+                <p class="mt-2 opacity-80">We prioritize smooth transactions and fast withdrawals, ensuring access to your funds whenever you need them.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Investment Plans -->
+    <section class="py-16 text-center px-6">
+        <h2 class="text-3xl font-bold">💰 Investment Plans</h2>
+        <div class="grid md:grid-cols-3 gap-8 mt-10">
+            {% for plan in investment_plans %}
+            <div class="bg-gray-800 p-6 rounded-xl shadow-lg hover:scale-105 transition-all">
+                <h3 class="text-xl font-semibold">{{ plan.return }} in {{ plan.duration }}</h3>
+                <p class="mt-2 opacity-80">Start with as little as <span class="text-green-400 font-bold">$10 USDT</span></p>
+                <a href="{% url 'investment:invest' %}" class="mt-4 inline-block bg-blue-500 px-5 py-2 rounded-lg hover:bg-blue-600 transition-all">Invest Now</a>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Referral Program -->
+    <section class="py-16 bg-gray-800 px-6 text-center">
+        <h2 class="text-3xl font-bold">📢 Referral Program</h2>
+        <p class="mt-4 opacity-80">Even if you don’t have money to invest, we have an exciting offer for you.
+            With our referral program, you can earn as high as <span class="text-yellow-400 font-bold">$2,000 USDT</span>
+        </p>
+        <a href="{% url 'core:refer_earn' %}" class="mt-10 inline-block bg-yellow-500 px-6 py-3 rounded-lg text-lg font-semibold hover:bg-yellow-600 transition-all">Learn more</a>
+    </section>
+
+    <!-- Top 10 Investors -->
+    <section class="py-16 px-6 text-center">
+        <h2 class="text-3xl font-bold">🏆 Top 10 Investors</h2>
+        <div class="overflow-x-auto mt-8">
+            <table class="min-w-full border border-gray-700 rounded-xl shadow-lg">
+                <thead>
+                    <tr class="bg-gray-700">
+                        <th class="p-3 border border-gray-600">S/N</th>
+                        <th class="p-3 border border-gray-600">Investor</th>
+                        <th class="p-3 border border-gray-600">Total Invested (USDT)</th>
+                        <th class="p-3 border border-gray-600">Country</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for investor in top_investors %}
+                    <tr class="bg-gray-800 hover:bg-gray-700 transition-all">
+                        <td class="p-3 border border-gray-600">{{ forloop.counter }}</td>
+                        <td class="p-3 border border-gray-600">{{ investor.user.get_full_name }}</td>
+                        <td class="p-3 border border-gray-600">${{ investor.total_invested }}</td>
+                        <td class="p-3 border border-gray-600">{{ investor.user.country }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <a href="{% url 'accounts:user_registration' %}" class="mt-10 inline-block bg-blue-500 px-6 py-3 rounded-lg text-lg font-semibold hover:bg-blue-600 transition-all">Start Investing Now</a>
+    </section>
+</div>
+
+<script>
+// Smooth Fade-In Animations
+const elements = document.querySelectorAll('.animate-fade-in');
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('opacity-100', 'translate-y-0');
+        }
+    });
+}, { threshold: 0.2 });
+
+elements.forEach(el => {
+    el.classList.add('opacity-0', 'translate-y-10', 'transition-all', 'duration-1000');
+    observer.observe(el);
+});
+</script>
+{% endblock %}

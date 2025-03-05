@@ -1,0 +1,83 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<div class="flex justify-center items-center min-h-screen bg-gray-100">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+        <h2 class="text-2xl font-bold text-center text-gray-800">Create an Account</h2>
+        <form method="POST" class="mt-4 space-y-4">
+            {% csrf_token %}
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700">First Name</label>
+                <input type="text" name="first_name" class="mt-1 p-2 w-full border rounded-lg focus:outline-none focus:ring focus:ring-indigo-300">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Last Name</label>
+                <input type="text" name="last_name" class="mt-1 p-2 w-full border rounded-lg focus:outline-none focus:ring focus:ring-indigo-300">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Username</label>
+                <input type="text" name="username" class="mt-1 p-2 w-full border rounded-lg focus:outline-none focus:ring focus:ring-indigo-300">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Email</label>
+                <input type="email" name="email" class="mt-1 p-2 w-full border rounded-lg focus:outline-none focus:ring focus:ring-indigo-300">
+                {% if form.email.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.email.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Phone Number</label>
+                <input type="tel" name="phone_number" class="mt-1 p-2 w-full border rounded-lg focus:outline-none focus:ring focus:ring-indigo-300">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">City</label>
+                <input type="text" name="city" class="mt-1 p-2 w-full border rounded-lg focus:outline-none focus:ring focus:ring-indigo-300">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Country</label>
+                <input type="text" name="country" class="mt-1 p-2 w-full border rounded-lg focus:outline-none focus:ring focus:ring-indigo-300">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Password</label>
+                <input type="password" name="password1" class="mt-1 p-2 w-full border rounded-lg focus:outline-none focus:ring focus:ring-indigo-300">
+                {% if form.password1.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.password1.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Confirm Password</label>
+                <input type="password" name="password2" class="mt-1 p-2 w-full border rounded-lg focus:outline-none focus:ring focus:ring-indigo-300">
+                {% if form.password2.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.password2.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Referral Code (Optional)</label>
+                <input type="text" name="referral_code" class="mt-1 p-2 w-full border rounded-lg focus:outline-none focus:ring focus:ring-indigo-300">
+                {% if form.referral_code.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.referral_code.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition">
+                Register
+            </button>
+        </form>
+
+        <p class="mt-4 text-center text-gray-600">
+            Already have an account? 
+            <a href="{% url 'accounts:user_login' %}" class="text-indigo-600 hover:underline">Login here</a>.
+        </p>
+    </div>
+</div>
+{% endblock %}

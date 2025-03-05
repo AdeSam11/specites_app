@@ -1,0 +1,22 @@
+{% extends "core/base.html" %}
+{% block content %}
+<div class="container mx-auto my-12 px-6">
+    <div class="bg-white p-6 rounded-2xl shadow-md max-w-lg mx-auto">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Refer & Earn</h2>
+        <p class="mb-4">
+            If you don’t have money to invest, we have an exciting offer for you.<br>
+            With our referral program, you can earn as high as <strong>$2,000 USDT</strong>.
+        </p>
+        <p class="mb-2"><strong>Your Referral Code:</strong></p>
+        <div class="bg-gray-200 p-3 rounded-lg text-center text-lg font-bold">
+            {{ request.user.referral_code }}
+        </div>
+        <p class="text-gray-600 mt-3">Share this code with friends and earn $2 when they invest!</p>
+    </div>
+    <div class="text-center mt-4">
+        <a href="{% url 'core:referral_history' %}" class="mt-4 inline-block bg-blue-500 text-white px-4 py-2 rounded-lg">
+            View Referral History
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<div class="container mx-auto my-12 px-6">
+    <div class="bg-white p-6 rounded-2xl shadow-md max-w-4xl mx-auto">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Withdrawal History</h2>
+
+        {% if withdrawals %}
+            <table class="w-full border-collapse border border-gray-300">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="border border-gray-300 p-2">Amount ($)</th>
+                        <th class="border border-gray-300 p-2">Wallet</th>
+                        <th class="border border-gray-300 p-2">Status</th>
+                        <th class="border border-gray-300 p-2">Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for withdrawal in withdrawals %}
+                    <tr class="text-center">
+                        <td class="border border-gray-300 p-2">{{ withdrawal.amount }}</td>
+                        <td class="border border-gray-300 p-2">{{ withdrawal.wallet_address }}</td>
+                        <td class="border border-gray-300 p-2">
+                            {% if withdrawal.status == 'pending' %}
+                                <span class="text-yellow-500">Pending</span>
+                            {% elif withdrawal.status == 'approved' %}
+                                <span class="text-green-500">Approved</span>
+                            {% else %}
+                                <span class="text-red-500">Rejected</span>
+                            {% endif %}
+                        </td>
+                        <td class="border border-gray-300 p-2">{{ withdrawal.created_at|date:"M d, Y H:i" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="text-gray-700 text-center">No withdrawals yet.</p>
+        {% endif %}
+        
+        <div class="mt-4 text-center">
+            <a href="{% url 'transactions:withdraw_money' %}" class="bg-blue-500 text-white px-4 py-2 rounded-lg">Back to Withdraw</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

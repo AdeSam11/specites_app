@@ -1,0 +1,51 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="container mx-auto my-12 px-6">
+    <div class="bg-white p-6 rounded-2xl shadow-md max-w-2xl mx-auto">
+        <h2 class="text-3xl font-bold text-gray-900 mb-6">Portfolio</h2>
+
+        <!-- Ongoing Investment Summary -->
+        <div class="mb-6">
+            <p class="text-lg font-semibold">Ongoing Total Amount Invested: <span class="text-blue-500">${{ total_invested }}</span></p>
+            <p class="text-lg font-semibold">Expected Total Amount After Maturity: <span class="text-green-500">${{ expected_total }}</span></p>
+        </div>
+
+        <!-- Investment Monitoring Bars -->
+        <h3 class="text-xl font-bold text-gray-800 mb-4">List of Ongoing Investments</h3>
+        {% for investment in ongoing_investments %}
+            <div class="mb-6 p-4 border rounded-lg shadow-sm">
+                <p class="text-md font-semibold">Investment Plan: {{ investment.plan_duration }} days</p>
+                <p class="text-md">Start Amount: <span class="font-bold text-red-500">${{ investment.amount }}</span></p>
+                <p class="text-md">Expected Amount: <span class="font-bold text-green-500">${{ investment.expected_return }}</span></p>
+                <p class="text-sm text-gray-600">Start Date: {{ investment.created_at|date:"M d, Y" }}</p>
+                <p class="text-sm text-gray-600">Maturity Date: {{ investment.matured_at|date:"M d, Y" }}</p>
+
+                <!-- Progress Bar Container -->
+                <div x-data="{ progress: {{ investment.progress_percentage|floatformat:0|default:0 }} }">
+                    <!-- Progress Bar -->
+                    <div class="w-full bg-gray-300 rounded-lg h-4 relative">
+                        <div class="h-4 rounded-lg bg-green-500 transition-all duration-700 ease-in-out"
+                            :style="'width: ' + progress + '%'">
+                        </div>
+                    </div>
+
+                    <!-- Progress Text -->
+                    <p class="text-sm text-gray-700 mt-1">
+                        <span x-text="progress"></span>% completed
+                    </p>
+                </div>
+                
+                <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+            </div>
+        {% empty %}
+            <p class="text-gray-500">No ongoing investments.</p>
+        {% endfor %}
+
+        <!-- Invest Now Button -->
+        <div class="mt-6 text-center">
+            <a href="{% url 'investment:invest' %}" class="bg-blue-500 text-white px-6 py-2 rounded-lg">Invest Now</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

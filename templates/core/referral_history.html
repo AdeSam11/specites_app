@@ -1,0 +1,43 @@
+{% extends "core/base.html" %}
+{% block content %}
+<div class="container mx-auto my-12 px-6">
+    <div class="bg-white p-6 rounded-2xl shadow-md max-w-lg mx-auto">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Your Referral History</h2>
+
+        {% if referrals %}
+            <table class="w-full border-collapse border border-gray-300">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="border border-gray-300 p-2 text-left">Referred User</th>
+                        <th class="border border-gray-300 p-2 text-left">Invested</th>
+                        <th class="border border-gray-300 p-2 text-left">Bonus Earned</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for referral in referrals %}
+                        <tr>
+                            <td class="border border-gray-300 p-2">{{ referral.referred_user.first_name }} {{ referral.referred_user.last_name }}</td>
+                            <td class="border border-gray-300 p-2">
+                                {% if referral.bonus_received %}
+                                    ✅ Yes
+                                {% else %}
+                                    ❌ No
+                                {% endif %}
+                            </td>
+                            <td class="border border-gray-300 p-2">
+                                {% if referral.bonus_received %}
+                                    $2.00
+                                {% else %}
+                                    $0.00
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="text-gray-600">You haven't referred anyone yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

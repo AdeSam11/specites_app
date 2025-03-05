@@ -1,0 +1,8 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<div class="container mx-auto my-12 px-6 text-center">
+    <h2 class="text-2xl font-bold text-green-600">Deposit Successful!</h2>
+    <p>Your deposit has been confirmed and added to your balance.</p>
+    <a href="{% url 'home' %}" class="text-blue-500 underline">Go back to Dashboard</a>
+</div>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="Investment WebApp" />
+        <meta name="author" content="Samuel Adetoyinbo" />
+        <title>
+            {% block head_title %}Specites{% endblock %}
+        </title>
+        <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
+
+        {% block head_extra %}{% endblock %}
+        <style>
+            html,
+            body {
+                height: 100%;
+                width: 100%;
+            }
+            
+            body {
+                background-image: url('{% static "img/wp-1.jpg" %}');
+                background-repeat: no-repeat;
+                background-size: cover;
+                background-position: center center;
+                padding-bottom: 5em;
+            }
+            body #main{
+                padding-bottom: 5em;
+            }
+            
+            footer {
+                position: fixed !important;
+                bottom: 0 !important;
+                width: 100%;
+            }
+        </style>
+    </head>
+    <body class="bg-gray-100">
+        {% block body %}
+            {% include 'core/navbar.html' %}
+
+            {% if messages %}
+                <div class="container mx-auto px-4 mt-4">
+                    {% for message in messages %}
+                        <div class="p-4 mb-4 rounded-lg 
+                            {% if message.tags == 'success' %} bg-green-100 text-green-800 border border-green-400 
+                            {% elif message.tags == 'error' %} bg-red-100 text-red-800 border border-red-400 
+                            {% elif message.tags == 'warning' %} bg-yellow-100 text-yellow-800 border border-yellow-400 
+                            {% else %} bg-blue-100 text-blue-800 border border-blue-400 {% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+
+            <div class="lg:container lg:mx-auto" id="main">
+                {% block content %}
+                <!-- Add content here -->
+                {% endblock %}
+            </div>
+            {% include 'core/footer.html' %}
+
+        {% endblock %}
+        {% block footer_extra %}{% endblock %}
+
+        <!--Start of Tawk.to Script-->
+        <script type="text/javascript">
+            var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+            (function(){
+                var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+                s1.async=true;
+                s1.src='https://embed.tawk.to/67c3979d6afa0d190c212ab3/1ila0gg9g';
+                s1.charset='UTF-8';
+                s1.setAttribute('crossorigin','*');
+                s0.parentNode.insertBefore(s1,s0);
+            })();
+        </script>
+        <!--End of Tawk.to Script-->
+    </body>
+
+</html>

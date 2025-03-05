@@ -1,0 +1,65 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<div class="container mx-auto my-12 px-6">
+    <div class="bg-white p-6 rounded-2xl shadow-md max-w-md mx-auto">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Choose an Investment Plan</h2>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="p-4 mb-4 text-white rounded-lg {% if message.tags == 'success' %}bg-green-500{% else %}bg-red-500{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST" action="{% url 'Investment:invest' %}" id="investment-form">
+            {% csrf_token %}
+            <label class="block text-gray-700">Amount to Invest (Min: $10)</label>
+            <input type="number" id="amount" name="amount" min="10" step="0.01" class="w-full border rounded-lg p-2 mb-4" required>
+
+            <label class="block text-gray-700">Select Investment Plan</label>
+            <select id="plan" name="plan_duration" class="w-full border rounded-lg p-2 mb-4" required>
+                <option value="15">10% for 15 days</option>
+                <option value="30">20% for 30 days</option>
+                <option value="60">45% for 60 days</option>
+                <option value="90">70% for 90 days</option>
+                <option value="180">150% for 180 days</option>
+                <option value="365">300% for 365 days</option>
+                <option value="730">600% for 730 days</option>
+            </select>
+
+            <label class="block text-gray-700">Expected Returns</label>
+            <input type="text" id="expected_return" class="w-full border rounded-lg p-2 mb-4 bg-gray-200" readonly>
+
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg w-full">Invest</button>
+
+            <a href="{% url 'Investment:investment_history' %}" 
+                class="bg-gray-700 text-white mt-5 px-4 py-2 rounded-lg w-full block text-center mb-4">
+                View Investment History
+            </a>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const amountInput = document.getElementById("amount");
+    const planSelect = document.getElementById("plan");
+    const expectedReturnInput = document.getElementById("expected_return");
+
+    const rates = {
+        15: 1.1, 30: 1.2, 60: 1.45,
+        90: 1.7, 180: 2.5, 365: 4.0, 730: 7.0
+    };
+
+    function updateExpectedReturn() {
+        const amount = parseFloat(amountInput.value) || 0;
+        const plan = parseInt(planSelect.value);
+        expectedReturnInput.value = `$${(amount * rates[plan]).toFixed(2)}`;
+    }
+
+    amountInput.addEventListener("input", updateExpectedReturn);
+    planSelect.addEventListener("change", updateExpectedReturn);
+});
+</script>
+{% endblock %}

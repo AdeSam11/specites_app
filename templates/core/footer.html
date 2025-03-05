@@ -1,0 +1,50 @@
+{% if request.user.is_authenticated %}
+    <footer id="dynamic-footer" class="fixed bottom-0 left-0 w-full bg-gray-900 text-white shadow-lg border-t border-blue-800 transition-transform duration-300 transform">
+        <nav class="flex justify-around py-3">
+            <a href="{% url 'home' %}" class="flex flex-col items-center px-5 py-2 rounded-lg 
+                transition duration-300 ease-in-out transform shadow-md 
+                hover:scale-110 hover:-translate-y-1 hover:shadow-xl active:scale-95 active:translate-y-1">
+                <span>🏠 Home</span>
+            </a>
+            <a href="{% url 'Investment:portfolio' %}" class="flex flex-col items-center px-5 py-2 rounded-lg 
+                transition duration-300 ease-in-out transform shadow-md 
+                hover:scale-110 hover:-translate-y-1 hover:shadow-xl active:scale-95 active:translate-y-1">
+                <span>📁 Portfolio</span>
+            </a>
+            <a href="{% url 'Investment:invest' %}" class="flex flex-col items-center px-5 py-2 rounded-lg 
+                transition duration-300 ease-in-out transform shadow-md 
+                hover:scale-110 hover:-translate-y-1 hover:shadow-xl active:scale-95 active:translate-y-1">
+                <span>💰 Invest</span>
+            </a>
+            <a href="{% url 'trade:trade_index' %}" class="flex flex-col items-center px-5 py-2 rounded-lg 
+                transition duration-300 ease-in-out transform shadow-md 
+                hover:scale-110 hover:-translate-y-1 hover:shadow-xl active:scale-95 active:translate-y-1">
+                <span>📊 Trade</span>
+            </a>
+            <a href="{% url 'accounts:history' %}" class="flex flex-col items-center px-5 py-2 rounded-lg 
+                transition duration-300 ease-in-out transform shadow-md 
+                hover:scale-110 hover:-translate-y-1 hover:shadow-xl active:scale-95 active:translate-y-1">
+                <span>📜 History</span>
+            </a>
+        </nav>
+    </footer>
+
+    <script>
+        let lastScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        let footer = document.getElementById("dynamic-footer");
+
+        window.addEventListener("scroll", function () {
+            let currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+
+            if (currentScroll > lastScrollTop) {
+                // Scrolling down, show the footer
+                footer.style.transform = "translateY(0)";
+            } else {
+                // Scrolling up, hide the footer
+                footer.style.transform = "translateY(100%)";
+            }
+
+            lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
+        }, false);
+    </script>
+{% endif %}

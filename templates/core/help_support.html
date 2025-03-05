@@ -1,0 +1,86 @@
+{% extends "core/base.html" %}
+{% block content %}
+<div class="container mx-auto my-12 px-6">
+    <div class="bg-white p-8 rounded-2xl shadow-lg max-w-2xl mx-auto">
+        <h2 class="text-3xl font-bold text-gray-900 mb-6 text-center">Help & Support</h2>
+        
+        <p class="text-gray-600 text-center mb-6">
+            Need help? Check out the frequently asked questions below or contact our support team.
+        </p>
+
+        <!-- FAQ Section -->
+        <div class="space-y-6">
+            <div class="bg-gray-100 p-4 rounded-lg">
+                <button class="faq-toggle font-medium text-gray-800 w-full text-left flex justify-between items-center">
+                    How does the Investment process work?
+                    <span class="text-blue-500">+</span>
+                </button>
+                <p class="faq-answer hidden mt-2 text-gray-600">
+                    1. You deposit funds into your Specites account, via the deposit page <br>
+                    2. Choose any product or investment plan of your choice, via the Invest page <br>
+                    3. Wait till the maturity date and both your money (the principal) and your interest will be paid into your balances automatically.
+                </p>
+            </div>
+
+            <div class="bg-gray-100 p-4 rounded-lg">
+                <button class="faq-toggle font-medium text-gray-800 w-full text-left flex justify-between items-center">
+                    Can I cancel my investment at any time?
+                    <span class="text-blue-500">+</span>
+                </button>
+                <p class="faq-answer hidden mt-2 text-gray-600">
+                    You can only cancel an investment plan of 30 days and above. In which case, before you can cancel it the investment would have lasted for at least 2 weeks (14 days), after which you can write us a mail or chat with our live customer support team and it’ll be cancelled for you. You should however be reminded that if you cancel your investment, you won’t be paid any interest - just your money (the principal).
+                </p>
+            </div>
+
+            <div class="bg-gray-100 p-4 rounded-lg">
+                <button class="faq-toggle font-medium text-gray-800 w-full text-left flex justify-between items-center">
+                    How long does it takes for my withdrawals or deposit to reflect in my account?
+                    <span class="text-blue-500">+</span>
+                </button>
+                <p class="faq-answer hidden mt-2 text-gray-600">
+                    A maximum of 1 hour, be it withdrawal or deposit
+                </p>
+            </div>
+
+            <div class="bg-gray-100 p-4 rounded-lg">
+                <button class="faq-toggle font-medium text-gray-800 w-full text-left flex justify-between items-center">
+                    How secure is my investment at Specites?
+                    <span class="text-blue-500">+</span>
+                </button>
+                <p class="faq-answer hidden mt-2 text-gray-600">
+                    Security is a top priority at Specites. We use advanced encryption, multi-factor authentication, and secure wallets to protect investor funds. Additionally, our trading model minimizes exposure to market risks, ensuring a more stable investment experience.
+                </p>
+            </div>
+
+            <div class="bg-gray-100 p-4 rounded-lg">
+                <button class="faq-toggle font-medium text-gray-800 w-full text-left flex justify-between items-center">
+                    How can I monitor my investment?
+                    <span class="text-blue-500">+</span>
+                </button>
+                <p class="faq-answer hidden mt-2 text-gray-600">
+                    Click on the “Portfolio” icon at the bottom and you’ll be able to track your investment, interest earnings, and transaction history in real-time.
+                </p>
+            </div>
+        </div>
+
+        <!-- Contact Support -->
+        <div class="mt-8 text-center">
+            <p class="text-gray-700">Still need help? Contact us at:</p>
+            <p class="font-medium text-blue-600">specites@gmail.com</p>
+            <a href="mailto:specites@gmail.com" class="mt-4 inline-block bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition">
+                Contact Support
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for FAQ Toggle -->
+<script>
+    document.querySelectorAll(".faq-toggle").forEach(button => {
+        button.addEventListener("click", function () {
+            const answer = this.nextElementSibling;
+            answer.classList.toggle("hidden");
+        });
+    });
+</script>
+{% endblock %}

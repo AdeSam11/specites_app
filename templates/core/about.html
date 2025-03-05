@@ -1,0 +1,174 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<div class="bg-gray-900 text-white min-h-screen py-12 px-6">
+    <section class="max-w-4xl mx-auto text-center">
+        <h1 class="mt-15 text-4xl font-bold">About 
+            <a href="{% url 'home' %}" 
+               class="text-blue-500 transition-transform duration-300 ease-in-out hover:scale-110 inline-block">
+                Specites
+            </a>
+        </h1>
+        <p class="text-lg text-gray-300 mt-4 opacity-80">No hidden fees, No hidden charges; what you see is what you get!</p>
+    </section>
+
+    <section class="max-w-4xl mx-auto mt-8">
+        <p class="mt-4 opacity-80 text-gray-300">
+            At Specites, we help investors grow their wealth through arbitrage trading using our high-tech AI and cutting-edge software with zero risk. Our AI-powered arbitrage trading software allows you to earn consistent, high-yield returns with Zero risk.
+        </p>
+        <p class="mt-4 opacity-80 text-gray-300">
+            We achieve this by leveraging price discrepancies in stocks and crypto markets across multiple platforms to generate guaranteed profits, ensuring you receive stable, fixed, and secure returns on your investments.
+        </p>
+        <div class="text-center mt-4">
+            <a href="{% url 'accounts:user_registration' %}" class="bg-blue-500 px-6 py-3 rounded-lg text-gray-300 font-semibold shadow-md hover:bg-blue-600 transition-all mt-4 inline-block">
+                Join Now
+            </a>
+        </div>
+    </section>
+
+    <section class="max-w-4xl mx-auto mt-12">
+        <h2 class="text-3xl font-bold">How Your Money is Used: Understanding the High Interest We Offer</h2>
+        <p class="mt-4 opacity-80 text-gray-300">
+            At Specites, we pride ourselves on being transparent with our investors. We want you to understand exactly how your money is being utilized and how we are able to offer such high returns. Our process operates through two primary strategies, which we apply to both crypto and stocks
+        </p>
+        
+        <section class="py-16 px-6 bg-gray-900 text-white">
+            <h2 class="text-xl font-bold">Module 1: Price discrepancy across different trading platforms for already listed/published asset (stocks/crypto)</h2>
+            <p class="text-lg text-gray-300 mb-4">A hypothetical scenario for demonstration.</p>
+            <p class="text-gray-300 mb-4">For crypto, our software scans hundreds of crypto trading platforms daily to identify price discrepancies. Here’s how it works:</p>
+            <ul class="list-disc pl-6 text-gray-300 mb-4">
+                <li>We look for assets (crypto) that are being sold at a lower price on one platform and a higher price on another. When our software detected such, we buy the asset at the lower price and sell it at the higher price, generating profit.</li>
+            </ul>
+            <p class="text-gray-300 mb-4">For example, let’s assume our software identifies a discrepancy in the price of Atom (Cosmos) on two platforms (Kucoin and Luno):</p>
+            <ul class="list-disc pl-6 text-gray-300 mb-4">
+                <li>Saying we can purchase 22 Atom tokens on Kucoin for 100 USDT.</li>
+                <li>Also saying, the same 22 Atom tokens are selling for 108 USDT on Luno.</li>
+            </ul>
+            <p class="text-gray-300 mb-4">We buy the 22 Atom tokens for 100 USDT at Kucoin, transfer them to our Luno account, and sell them for 108 USDT, making 8 USDT profit (including charges).</p>
+            <p class="text-gray-300 mb-4">This process is repeated multiple times per day and weeks, consistently generating returns.</p>
+            <p class="text-gray-300 mb-4">We don’t hide our modules and you literally can do the same thing we are doing for yourself provided you have the software and time… (and if you don’t, we do it for you and share the profit).</p>
+            
+            <h2 class="text-xl font-bold">Module 2: Price Discrepancy “Before” and “After” an Asset is Listed on Trading Platforms</h2>
+            <p class="text-gray-300 mb-4">In this module, we focus on assets that have not yet been listed on public platforms. Our software identifies high-potential assets that are about to be listed. Here’s an example:</p>
+            <p class="text-gray-300 mb-4">Let’s assume ABC Coin is set to be listed on a trading platforms tomorrow at 8 AM, and today, we can purchase 1,000 ABC Coins for 100 USDT.</p>
+            <p class="text-gray-300 mb-4">Once the coin is listed on public trading platforms, the price increases, and we could sell the same 1,000 ABC Coins for 110 USDT or more, generating a profit.</p>
+            <p class="text-gray-300 mb-4">Please note that the numbers mentioned above are purely hypothetical to illustrate the concept. The exact profits or amounts we generate per trade vary due to transaction fees, software costs, maintenance, and other factors that are not accounted for in this example.</p>
+            <p class="text-gray-300 mb-4">By executing a high volume of such trades weekly, we are able to offer the fixed high interest that we offer our investors.</p>
+            
+            <h2 class="text-xl font-bold mt-8">Stocks: A More Complex Process</h2>
+            <p class="text-gray-300 mb-4">While the process for stocks follows a similar concept, it is more complex and involves additional factors. Simplifying this would not do it justice. However, even without including stocks in our assets, we can still maintain the same high interest rates that we offer today.</p>
+            <p class="text-gray-300 mb-4">We encourage you to review our FAQs for any further questions. However, should you need additional clarification, feel free to reach out to us directly.</p>
+            <div class="text-center mt-6">
+                <a href="/invest" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg text-lg font-semibold">Start Now</a>
+            </div>
+        </section>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="py-16 px-6" x-data="{ open: null }">
+        <h2 class="text-3xl font-bold text-center">Frequently Asked Questions</h2>
+        <div class="max-w-4xl mx-auto mt-10">
+            {% for faq in faqs %}
+            <div class="bg-gray-800 p-4 rounded-lg shadow-lg mb-4">
+                <button @click="open === {{ forloop.counter }} ? open = null : open = {{ forloop.counter }}" class="w-full text-left flex justify-between items-center">
+                    <span class="text-lg font-semibold">{{ faq.question }}</span>
+                    <span x-show="open !== {{ forloop.counter }}" class="text-blue-400">➕</span>
+                    <span x-show="open === {{ forloop.counter }}" class="text-red-400">➖</span>
+                </button>
+
+                <!-- Handle Special Formatting for the Fourth Question -->
+                {% if forloop.counter == 4 %}
+                <div x-show="open === {{ forloop.counter }}" class="mt-3 opacity-80" x-transition>
+                    <ul class="list-disc list-inside space-y-2">
+                        <li>You deposit funds into your Specites account.</li>
+                        <li>Choose any product or investment plan of your choice.</li>
+                        <li>Wait till the maturity date, and both your principal amount and interest will be paid into your withdrawable balance automatically.</li>
+                    </ul>
+                </div>
+                {% else %}
+                <!-- Regular Answer Display -->
+                <p x-show="open === {{ forloop.counter }}" class="mt-3 opacity-80" x-transition>
+                    {{ faq.answer }}
+                </p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+</div>
+
+<section id="contact-us" class="bg-gray-100 py-16 px-6 md:px-12 lg:px-24">
+    <div class="max-w-4xl mx-auto text-center">
+        <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">📞 Get in Touch</h2>
+        <p class="text-gray-600 text-lg">
+            Have more questions? Our team is here to help. Reach out to us through any of the options below.
+        </p>
+    </div>
+
+    <!-- Contact Options -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
+        <div class="bg-white p-6 rounded-lg shadow-md flex flex-col items-center">
+            <span class="text-blue-500 text-4xl mb-3">📧</span>
+            <h3 class="text-xl font-semibold text-gray-800">Email Support</h3>
+            <p class="text-gray-600 text-sm text-center mt-2">Drop us an email, and we’ll respond within 24 hours.</p>
+            <a href="mailto:support@specites.com" class="mt-3 text-blue-500 font-medium hover:underline">
+                specites@gmail.com
+            </a>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-md flex flex-col items-center">
+            <span class="text-green-500 text-4xl mb-3">💬</span>
+            <h3 class="text-xl font-semibold text-gray-800">Live Chat</h3>
+            <p class="text-gray-600 text-sm text-center mt-2">Chat with our support team for quick assistance.</p>
+            <a href="javascript:void(0);" onclick="Tawk_API.toggle()" class="mt-6 text-blue-500 underline">
+                Chat with Us
+            </a>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-md flex flex-col items-center">
+            <span class="text-indigo-500 text-4xl mb-3">🌍</span>
+            <h3 class="text-xl font-semibold text-gray-800">Follow Us</h3>
+            <p class="text-gray-600 text-sm text-center mt-2">Stay updated with our latest news and updates.</p>
+            <div class="flex space-x-4 mt-3">
+                <a href="#" class="text-blue-600 text-2xl hover:text-blue-800">📘</a>
+                <a href="#" class="text-pink-500 text-2xl hover:text-pink-700">📷</a>
+                <a href="#" class="text-blue-400 text-2xl hover:text-blue-600">🐦</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Form -->
+    <div class="mt-16 bg-white p-8 shadow-md rounded-lg max-w-3xl mx-auto">
+        <h3 class="text-2xl font-semibold text-gray-800 text-center mb-4">Send Us a Message</h3>
+
+        <!-- Display Django Messages -->
+        {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                    <div class="p-3 rounded-lg text-white {% if message.tags == 'success' %}bg-green-500{% else %}bg-red-500{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form action="{% url 'about' %}" method="POST" class="space-y-4">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {{ form.name }}
+                {{ form.email }}
+            </div>
+            {{ form.subject }}
+            {{ form.message }}
+            
+            <button type="submit" class="w-full bg-blue-500 text-white py-3 rounded-lg font-medium hover:bg-blue-600">
+                ✉️ Send Message
+            </button>
+        </form>
+    </div>
+
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+{% endblock %}

@@ -1,0 +1,19 @@
+# Django Framework
+Django==5.1.6
+
+# Celery and Task Scheduling
+celery==5.2.7
+django-celery-beat==2.7.0  # For periodic tasks
+django-celery-results==2.5.1  # To store Celery task results
+
+# Redis for Celery broker
+redis==5.0.1  
+
+# Utilities
+python-dateutil==2.9.0
+requests==2.31.0  # For making API calls
+
+# Database Support
+psycopg2-binary==2.9.9  # PostgreSQL
+
+python-dotenv

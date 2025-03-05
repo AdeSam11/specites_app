@@ -1,0 +1,81 @@
+{% if request.user.is_authenticated %}
+{% load static %}
+
+<nav class="flex items-center justify-between bg-gray-900 p-6 px-10">
+    <!-- Left Side: Menu Icon & Logo -->
+    <div class="flex items-center">
+        <!-- Menu Icon (Mobile) -->
+        <button id="menu-btn" class="text-white focus:outline-none lg:hidden">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+            </svg>
+        </button>
+
+        <!-- Logo -->
+        <img src="{% static 'img/logo.png' %}" alt="Logo" class="h-20 w-25 ml-4">
+    </div>
+
+    <!-- Desktop Navigation Menu (Hidden on Mobile) -->
+    <div class="hidden lg:flex space-x-6">
+        <a href="{% url 'profile' %}" class="text-white hover:text-gray-300">My Profile</a>
+        <a href="{% url 'transactions:deposit_money' %}" class="text-white hover:text-gray-300">Deposit</a>
+        <a href="{% url 'transactions:withdraw_money' %}" class="text-white hover:text-gray-300">Withdraw</a>
+        <a href="{% url 'core:refer_earn' %}" class="text-white hover:text-gray-300">Refer and Earn</a>
+        <a href="{% url 'help' %}" class="text-white hover:text-gray-300">Help & Support</a>
+    </div>
+
+    <!-- Right Side: Balance Dropdown & About Link -->
+    <div class="flex items-center space-x-6">
+        <!-- Balance Dropdown -->
+        <div class="relative">
+            <button id="balance-btn" class="text-white font-medium focus:outline-none">
+                Balance: ${{ request.user.account_profile.balance }}
+            </button>
+            <!-- Dropdown Menu -->
+            <div id="balance-dropdown" class="hidden absolute right-0 mt-2 w-40 bg-white text-black rounded shadow-lg">
+                <a href="{% url 'transactions:deposit_money' %}" class="block px-4 py-2 hover:bg-gray-200">Deposit</a>
+                <a href="{% url 'transactions:withdraw_money' %}" class="block px-4 py-2 hover:bg-gray-200">Withdraw</a>
+            </div>
+        </div>
+
+        <!-- About Link -->
+        <a href="{% url 'about' %}" class="text-white hover:text-gray-300">About</a>
+
+        <!-- Logout Link -->
+        <a href="{% url 'accounts:user_logout' %}" class="text-white hover:text-gray-300">Logout</a>
+    </div>
+</nav>
+
+<!-- Hidden Mobile Navigation Menu -->
+<div id="menu-dropdown" class="hidden bg-black text-white absolute top-16 left-0 w-full shadow-lg lg:hidden">
+    <a href="{% url 'profile' %}" class="block px-4 py-2 border-b border-gray-700">My Profile</a>
+    <a href="{% url 'transactions:deposit_money' %}" class="block px-4 py-2 border-b border-gray-700">Deposit</a>
+    <a href="{% url 'transactions:withdraw_money' %}" class="block px-4 py-2 border-b border-gray-700">Withdraw</a>
+    <a href="{% url 'core:refer_earn' %}" class="block px-4 py-2 border-b border-gray-700">Refer and Earn</a>
+    <a href="{% url 'help' %}" class="block px-4 py-2 border-b border-gray-700">Help & Support</a>
+</div>
+
+<!-- JavaScript for Menu & Balance Dropdown -->
+<script>
+    document.getElementById('menu-btn').addEventListener('click', function () {
+        document.getElementById('menu-dropdown').classList.toggle('hidden');
+    });
+
+    document.getElementById('balance-btn').addEventListener('click', function () {
+        document.getElementById('balance-dropdown').classList.toggle('hidden');
+    });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function (event) {
+        if (!document.getElementById('menu-btn').contains(event.target) &&
+            !document.getElementById('menu-dropdown').contains(event.target)) {
+            document.getElementById('menu-dropdown').classList.add('hidden');
+        }
+
+        if (!document.getElementById('balance-btn').contains(event.target) &&
+            !document.getElementById('balance-dropdown').contains(event.target)) {
+            document.getElementById('balance-dropdown').classList.add('hidden');
+        }
+    });
+</script>
+{% endif %}
