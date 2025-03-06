@@ -28,6 +28,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DJANGO_DEBUG", "False") == "True"
 
+SECRET_KEY = os.getenv("SECRET_KEY")
+
 ALLOWED_HOSTS = ["specites-web-app.onrender.com", "localhost", "127.0.0.1"]
 
 LOGIN_REDIRECT_URL = '/'
