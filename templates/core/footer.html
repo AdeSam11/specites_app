@@ -1,50 +1,41 @@
 {% if request.user.is_authenticated %}
-    <footer id="dynamic-footer" class="fixed bottom-0 left-0 w-full bg-gray-900 text-white shadow-lg border-t border-blue-800 transition-transform duration-300 transform">
-        <nav class="flex justify-around py-3">
-            <a href="{% url 'home' %}" class="flex flex-col items-center px-5 py-2 rounded-lg 
-                transition duration-300 ease-in-out transform shadow-md 
-                hover:scale-110 hover:-translate-y-1 hover:shadow-xl active:scale-95 active:translate-y-1">
+    <footer id="dynamic-footer" class="fixed bottom-0 left-0 w-full bg-gray-900 text-white shadow-lg border-t border-blue-800">
+        <nav class="grid grid-cols-5 gap-1 py-2 text-xs sm:text-sm md:text-base">
+            <a href="{% url 'home' %}" class="flex flex-col items-center px-2 py-1 hover:bg-gray-800 transition duration-300">
                 <span>🏠 Home</span>
             </a>
-            <a href="{% url 'Investment:portfolio' %}" class="flex flex-col items-center px-5 py-2 rounded-lg 
-                transition duration-300 ease-in-out transform shadow-md 
-                hover:scale-110 hover:-translate-y-1 hover:shadow-xl active:scale-95 active:translate-y-1">
+            <a href="{% url 'Investment:portfolio' %}" class="flex flex-col items-center px-2 py-1 hover:bg-gray-800 transition duration-300">
                 <span>📁 Portfolio</span>
             </a>
-            <a href="{% url 'Investment:invest' %}" class="flex flex-col items-center px-5 py-2 rounded-lg 
-                transition duration-300 ease-in-out transform shadow-md 
-                hover:scale-110 hover:-translate-y-1 hover:shadow-xl active:scale-95 active:translate-y-1">
+            <a href="{% url 'Investment:invest' %}" class="flex flex-col items-center px-2 py-1 hover:bg-gray-800 transition duration-300">
                 <span>💰 Invest</span>
             </a>
-            <a href="{% url 'trade:trade_index' %}" class="flex flex-col items-center px-5 py-2 rounded-lg 
-                transition duration-300 ease-in-out transform shadow-md 
-                hover:scale-110 hover:-translate-y-1 hover:shadow-xl active:scale-95 active:translate-y-1">
+            <a href="{% url 'trade:trade_index' %}" class="flex flex-col items-center px-2 py-1 hover:bg-gray-800 transition duration-300">
                 <span>📊 Trade</span>
             </a>
-            <a href="{% url 'accounts:history' %}" class="flex flex-col items-center px-5 py-2 rounded-lg 
-                transition duration-300 ease-in-out transform shadow-md 
-                hover:scale-110 hover:-translate-y-1 hover:shadow-xl active:scale-95 active:translate-y-1">
+            <a href="{% url 'accounts:history' %}" class="flex flex-col items-center px-2 py-1 hover:bg-gray-800 transition duration-300">
                 <span>📜 History</span>
             </a>
         </nav>
     </footer>
 
+
     <script>
-        let lastScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        let lastScrollTop = window.scrollY;
         let footer = document.getElementById("dynamic-footer");
 
         window.addEventListener("scroll", function () {
-            let currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+            let currentScroll = window.scrollY;
 
             if (currentScroll > lastScrollTop) {
-                // Scrolling down, show the footer
-                footer.style.transform = "translateY(0)";
-            } else {
-                // Scrolling up, hide the footer
+                // Scrolling down, hide the footer
                 footer.style.transform = "translateY(100%)";
+            } else {
+                // Scrolling up, show the footer
+                footer.style.transform = "translateY(0)";
             }
 
             lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
-        }, false);
+        }, { passive: true });
     </script>
 {% endif %}

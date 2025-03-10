@@ -2,6 +2,8 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import authenticate
+from django_countries.fields import CountryField
+from django_countries.widgets import CountrySelectWidget
 
 from .models import User
 
@@ -10,6 +12,14 @@ class UserRegistrationForm(UserCreationForm):
     phone_number = forms.CharField(
         max_length=15, 
         widget=forms.TextInput(attrs={'placeholder': 'Enter phone number'})
+    )
+    country_code = forms.CharField(
+        max_length=6,
+        required=True,
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'class': 'bg-gray-200'}),
+    )
+    country = CountryField().formfield(
+        widget=CountrySelectWidget(attrs={'class': 'form-control'})
     )
     referral_code = forms.CharField(
         max_length=10, required=False, label="Referral Code (Optional)"
@@ -23,11 +33,12 @@ class UserRegistrationForm(UserCreationForm):
             'first_name',
             'last_name',
             'email',
+            'country',
+            'country_code',
             'phone_number',
             'password1',
             'password2',
             'city',
-            'country',
         ]
 
     def __init__(self, *args, **kwargs):

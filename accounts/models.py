@@ -1,5 +1,6 @@
 import random
 import string
+from django_countries.fields import CountryField
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
@@ -10,6 +11,8 @@ class User(AbstractUser):
     username = None
     email = models.EmailField(unique=True, null=False, blank=False)
     phone_number = models.CharField(max_length=15, unique=True, blank=False, null=False)
+    country_code = models.CharField(max_length=6, blank=False, null=True)  # Store country code separately
+    country = CountryField(blank_label="(Select country)")
 
     objects = UserManager()
 
@@ -17,12 +20,11 @@ class User(AbstractUser):
     REQUIRED_FIELDS = ['phone_number']
 
     city = models.CharField(max_length=256)
-    country = models.CharField(max_length=256)
     referral_code = models.CharField(max_length=10, unique=True)
     referral_bonus = models.DecimalField(default=0.00, max_digits=10, decimal_places=2)
 
     def save(self, *args, **kwargs):
-        if not self.referral_code:  # Only generate if it's empty
+        if not self.referral_code:  
             self.referral_code = self.generate_referral_code()
         super().save(*args, **kwargs)
 
@@ -39,6 +41,9 @@ class Profile(models.Model):
         related_name='account_profile',
         on_delete=models.CASCADE
     )
+    date_of_birth = models.DateField(null=True, blank=True)
+    national_id_number = models.CharField(max_length=50, null=True, blank=True)
+    
     balance = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     withdrawable_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     ongoing_investment_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)

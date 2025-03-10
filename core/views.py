@@ -6,10 +6,11 @@ from django.contrib.auth import update_session_auth_hash
 from django.shortcuts import render, redirect
 from django.core.mail import send_mail
 from django.contrib import messages
-from .forms import ContactForm
+from .forms import ContactForm, ProfileUpdateForm
 from Investment.models import Investment
 from .models import Referral
 from django.views.generic import TemplateView
+from django.contrib.auth import get_user_model
 
 
 def home(request):
@@ -23,9 +24,14 @@ def home(request):
         top_investors = Profile.objects.select_related('user') \
             .order_by('-total_invested')[:10]
 
+        # Get the latest 10 users who recently joined
+        User = get_user_model()
+        latest_users = User.objects.order_by('-date_joined')[:10]
+
         return render(request, "core/index.html", {
             "investment_plans": investment_plans,
-            "top_investors": top_investors
+            "top_investors": top_investors,
+            "latest_users": latest_users,  # Pass to template
         })
     else:
         user_profile = getattr(request.user, 'account_profile', None)
@@ -38,12 +44,17 @@ def home(request):
     # Get top 10 investors ranked by total invested amount
     top_investors = Profile.objects.order_by('-total_invested')[:10]
 
+    # Get the latest 10 users who recently joined
+    User = get_user_model()
+    latest_users = User.objects.order_by('-date_joined')[:10]
+
     context = {
         'withdrawable_balance': getattr(user_profile, 'withdrawable_balance', 0.00),
         'ongoing_investment_balance': getattr(user_profile, 'ongoing_investment_balance', 0.00),
         'total_invested': getattr(user_profile, 'total_invested', 0.00),
         'total_yielded': getattr(user_profile, 'total_yielded', 0.00),
-        'top_investors': top_investors
+        'top_investors': top_investors,
+        'latest_users': latest_users,
     }
     return render(request, 'core/home.html', context) 
 
@@ -95,7 +106,7 @@ def about_view(request):
         },
         {
             "question": "What are the minimum and maximum investment amounts?",
-            "answer": "The minimum investment amounts is 10 USDT and there is no maximum investment amount."
+            "answer": "The minimum investment amount is 10 USDT and there is no maximum investment amount."
         },
         {
             "question": "What is the minimum and maximum amount I can deposit and withdraw?",
@@ -159,17 +170,48 @@ def referral_history(request):
 @login_required
 def profile_view(request):
     user = request.user
+    profile, created = Profile.objects.get_or_create(user=user)
+
     password_form = PasswordChangeForm(user=request.user)
+    profile_form = ProfileUpdateForm(instance=profile)
 
     if request.method == "POST":
-        password_form = PasswordChangeForm(user=request.user, data=request.POST)
-        if password_form.is_valid():
-            password_form.save()
-            update_session_auth_hash(request, password_form.user)
-            messages.success(request, "Your password has been updated successfully!")
+        if "update_profile" in request.POST:
+            profile_form = ProfileUpdateForm(request.POST, instance=profile)
+            if profile_form.is_valid():
+                profile_form.save()
+                messages.success(request, "Your profile has been updated successfully!")
 
-    return render(request, "core/profile.html", {"user": user, "password_form": password_form})
+        if "change_password" in request.POST:
+            password_form = PasswordChangeForm(user=request.user, data=request.POST)
+            if password_form.is_valid():
+                password_form.save()
+                update_session_auth_hash(request, password_form.user)
+                messages.success(request, "Your password has been updated successfully!")
+
+    return render(
+        request, 
+        "core/profile.html", 
+        {"user": user, "password_form": password_form, "profile_form": profile_form}
+    )
 
 @login_required
 def help_support_view(request):
-    return render(request, "core/help_support.html")
+    form = ContactForm(request.POST)
+    if form.is_valid():
+        name = form.cleaned_data['name']
+        email = form.cleaned_data['email']
+        subject = form.cleaned_data['subject']
+        message = form.cleaned_data['message']
+
+        send_mail(
+            f'Contact Form: {subject}',
+            f'From: {name} <{email}>\n\n{message}',
+            email,
+            [settings.EMAIL_HOST_USER],  
+            fail_silently=False,
+        )
+
+        messages.success(request, "Your message has been sent successfully!")
+        return redirect('help')
+    return render(request, "core/help_support.html", {"form": form})

@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DJANGO_DEBUG", "False") == "True"
+DEBUG = True
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 
@@ -55,6 +55,7 @@ INSTALLED_APPS = [
 
     'django_celery_beat',
     'django_celery_results',
+    'django_countries',
 
     'accounts',
     'core',
@@ -98,16 +99,12 @@ WSGI_APPLICATION = 'banking_system.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
-print("DATABASE_URL:", os.getenv("DATABASE_URL"))
-
 DATABASES = {
     'default': dj_database_url.config(
         default=os.getenv("DATABASE_URL"),
         engine="django.db.backends.postgresql"
     )
 }
-
-print("DATABASES:", DATABASES)
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators

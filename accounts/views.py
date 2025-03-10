@@ -26,25 +26,30 @@ class UserRegistrationView(View):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
-        form = UserRegistrationForm()
+        # Pre-fill referral code from URL if available
+        referral_code = request.GET.get("ref", "")
+        form = UserRegistrationForm(initial={"referral_code": referral_code})
         return render(request, self.template_name, {"form": form})
 
     def post(self, request, *args, **kwargs):
         form = UserRegistrationForm(request.POST)
 
         if form.is_valid():
-            user = form.save()
-
             # Handle referral
             referral_code = form.cleaned_data.get("referral_code")
             if referral_code:
                 try:
+                    user = form.save()
                     referrer_profile = User.objects.get(referral_code=referral_code)
                     Referral.objects.create(referrer=referrer_profile, referred_user=user)
                 except User.DoesNotExist:
                     messages.error(request, "Invalid referral code, try again")
                     return render(request, self.template_name, {"form": form})
         
+            user = form.save(commit=False)
+            user.country_code = form.cleaned_data['country_code']
+            user = form.save()
+            
             # Generate OTP and send email
             otp_code = get_random_string(length=6, allowed_chars='1234567890')  # 6-digit OTP
             EmailVerificationOTP.objects.create(user=user, otp=otp_code)

@@ -36,6 +36,12 @@
                     Create one here
                 </a>
             </p>
+            <p class="text-sm text-gray-600 mb-4">
+                Forgot your withdrawal password? 
+                <a href="{% url 'transactions:reset_withdrawal_password_request' %}" class="text-blue-500 underline">
+                    Reset it here
+                </a>
+            </p>
 
             <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded-lg w-full">Withdraw</button>
         </form>

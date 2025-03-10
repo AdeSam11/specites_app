@@ -1,7 +1,7 @@
 {% if request.user.is_authenticated %}
 {% load static %}
 
-<nav class="flex items-center justify-between bg-gray-900 p-6 px-10">
+<nav class="flex items-center justify-between bg-gray-900 p-4 lg:p-6">
     <!-- Left Side: Menu Icon & Logo -->
     <div class="flex items-center">
         <!-- Menu Icon (Mobile) -->
@@ -12,7 +12,7 @@
         </button>
 
         <!-- Logo -->
-        <img src="{% static 'img/logo.png' %}" alt="Logo" class="h-20 w-25 ml-4">
+        <img src="{% static 'img/logo.png' %}" alt="Logo" class="h-16 w-auto ml-4">
     </div>
 
     <!-- Desktop Navigation Menu (Hidden on Mobile) -->
@@ -20,37 +20,57 @@
         <a href="{% url 'profile' %}" class="text-white hover:text-gray-300">My Profile</a>
         <a href="{% url 'transactions:deposit_money' %}" class="text-white hover:text-gray-300">Deposit</a>
         <a href="{% url 'transactions:withdraw_money' %}" class="text-white hover:text-gray-300">Withdraw</a>
+        
+        <!-- Transaction History Dropdown (Desktop) -->
+        <div class="relative group">
+            <button class="text-white hover:text-gray-300 focus:outline-none">
+                Transaction History ▼
+            </button>
+            <div class="absolute hidden group-hover:block bg-white text-black mt-2 rounded shadow-lg w-48">
+                <a href="{% url 'transactions:deposit_history' %}" class="block px-4 py-2 hover:bg-gray-200">Deposit History</a>
+                <a href="{% url 'transactions:withdrawal_history' %}" class="block px-4 py-2 hover:bg-gray-200">Withdrawal History</a>
+                <a href="{% url 'investment:investment_history' %}" class="block px-4 py-2 hover:bg-gray-200">Investment History</a>
+            </div>
+        </div>
+
         <a href="{% url 'core:refer_earn' %}" class="text-white hover:text-gray-300">Refer and Earn</a>
         <a href="{% url 'help' %}" class="text-white hover:text-gray-300">Help & Support</a>
     </div>
 
-    <!-- Right Side: Balance Dropdown & About Link -->
-    <div class="flex items-center space-x-6">
+    <!-- Right Side: Balance & Logout -->
+    <div class="flex items-center space-x-4">
         <!-- Balance Dropdown -->
         <div class="relative">
-            <button id="balance-btn" class="text-white font-medium focus:outline-none">
-                Balance: ${{ request.user.account_profile.balance }}
+            <button id="balance-btn" class="text-white font-semibold bg-blue-600 px-3 py-1.5 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none">
+                💰 ${{ request.user.account_profile.balance }}
             </button>
-            <!-- Dropdown Menu -->
             <div id="balance-dropdown" class="hidden absolute right-0 mt-2 w-40 bg-white text-black rounded shadow-lg">
                 <a href="{% url 'transactions:deposit_money' %}" class="block px-4 py-2 hover:bg-gray-200">Deposit</a>
                 <a href="{% url 'transactions:withdraw_money' %}" class="block px-4 py-2 hover:bg-gray-200">Withdraw</a>
             </div>
         </div>
 
-        <!-- About Link -->
-        <a href="{% url 'about' %}" class="text-white hover:text-gray-300">About</a>
-
-        <!-- Logout Link -->
+        <a href="{% url 'about' %}" class="hidden sm:block text-white hover:text-gray-300">About</a>
         <a href="{% url 'accounts:user_logout' %}" class="text-white hover:text-gray-300">Logout</a>
     </div>
 </nav>
 
-<!-- Hidden Mobile Navigation Menu -->
+<!-- Mobile Navigation Menu -->
 <div id="menu-dropdown" class="hidden bg-black text-white absolute top-16 left-0 w-full shadow-lg lg:hidden">
     <a href="{% url 'profile' %}" class="block px-4 py-2 border-b border-gray-700">My Profile</a>
     <a href="{% url 'transactions:deposit_money' %}" class="block px-4 py-2 border-b border-gray-700">Deposit</a>
     <a href="{% url 'transactions:withdraw_money' %}" class="block px-4 py-2 border-b border-gray-700">Withdraw</a>
+
+    <!-- Transaction History Dropdown (Mobile) -->
+    <button id="transaction-history-btn" class="block px-4 py-2 border-b border-gray-700 w-full text-left">
+        Transaction History ▼
+    </button>
+    <div id="transaction-history-dropdown" class="hidden bg-gray-800 text-white">
+        <a href="{% url 'transactions:deposit_history' %}" class="block px-4 py-2 border-b border-gray-700">Deposit History</a>
+        <a href="{% url 'transactions:withdrawal_history' %}" class="block px-4 py-2 border-b border-gray-700">Withdrawal History</a>
+        <a href="{% url 'investment:investment_history' %}" class="block px-4 py-2 border-b border-gray-700">Investment History</a>
+    </div>
+
     <a href="{% url 'core:refer_earn' %}" class="block px-4 py-2 border-b border-gray-700">Refer and Earn</a>
     <a href="{% url 'help' %}" class="block px-4 py-2 border-b border-gray-700">Help & Support</a>
 </div>
@@ -65,16 +85,29 @@
         document.getElementById('balance-dropdown').classList.toggle('hidden');
     });
 
+    document.getElementById('transaction-history-btn').addEventListener('click', function () {
+        document.getElementById('transaction-history-dropdown').classList.toggle('hidden');
+    });
+
     // Close dropdowns when clicking outside
     document.addEventListener('click', function (event) {
+        let menuDropdown = document.getElementById('menu-dropdown');
+        let balanceDropdown = document.getElementById('balance-dropdown');
+        let transactionDropdown = document.getElementById('transaction-history-dropdown');
+
         if (!document.getElementById('menu-btn').contains(event.target) &&
-            !document.getElementById('menu-dropdown').contains(event.target)) {
-            document.getElementById('menu-dropdown').classList.add('hidden');
+            !menuDropdown.contains(event.target)) {
+            menuDropdown.classList.add('hidden');
         }
 
         if (!document.getElementById('balance-btn').contains(event.target) &&
-            !document.getElementById('balance-dropdown').contains(event.target)) {
-            document.getElementById('balance-dropdown').classList.add('hidden');
+            !balanceDropdown.contains(event.target)) {
+            balanceDropdown.classList.add('hidden');
+        }
+
+        if (!document.getElementById('transaction-history-btn').contains(event.target) &&
+            !transactionDropdown.contains(event.target)) {
+            transactionDropdown.classList.add('hidden');
         }
     });
 </script>

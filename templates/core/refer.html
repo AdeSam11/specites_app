@@ -5,18 +5,48 @@
         <h2 class="text-2xl font-bold text-gray-900 mb-4">Refer & Earn</h2>
         <p class="mb-4">
             If you don’t have money to invest, we have an exciting offer for you.<br>
-            With our referral program, you can earn as high as <strong>$2,000 USDT</strong>.
+            With our referral program, you can earn as high as <strong>$10,000 USDT</strong>.
         </p>
+
+        <!-- Referral Code -->
         <p class="mb-2"><strong>Your Referral Code:</strong></p>
-        <div class="bg-gray-200 p-3 rounded-lg text-center text-lg font-bold">
-            {{ request.user.referral_code }}
+        <div class="flex items-center bg-gray-200 p-3 rounded-lg text-lg font-bold">
+            <span id="referral-code">{{ request.user.referral_code }}</span>
+            <button onclick="copyToClipboard('referral-code')" class="ml-2 text-blue-500">
+                📋 Copy
+            </button>
         </div>
-        <p class="text-gray-600 mt-3">Share this code with friends and earn $2 when they invest!</p>
+
+        <!-- Referral Link -->
+        <p class="mt-4"><strong>Your Referral Link:</strong></p>
+        <div class="flex items-center bg-gray-200 p-3 rounded-lg text-sm">
+            <input type="text" id="referral-link" value="{{ request.scheme }}://{{ request.get_host }}{% url 'accounts:user_registration' %}?ref={{ request.user.referral_code }}" readonly class="bg-gray-200 outline-none w-full">
+            <button onclick="copyToClipboard('referral-link')" class="ml-2 text-blue-500">
+                📋 Copy
+            </button>
+        </div>
+        <p class="text-gray-600 mt-3">Share this code or link with friends and earn $2 for each person you refer who makes a deposit and invests!</p>
     </div>
+    
+    <!-- Referral History Button -->
     <div class="text-center mt-4">
         <a href="{% url 'core:referral_history' %}" class="mt-4 inline-block bg-blue-500 text-white px-4 py-2 rounded-lg">
             View Referral History
         </a>
     </div>
 </div>
+
+<!-- JavaScript to Copy Code -->
+<script>
+    function copyToClipboard(elementId) {
+        var element = document.getElementById(elementId);
+        var textToCopy = element.tagName === "INPUT" ? element.value : element.innerText;
+
+        navigator.clipboard.writeText(textToCopy).then(function() {
+            alert("Copied: " + textToCopy);
+        }).catch(function(err) {
+            console.error("Failed to copy text: ", err);
+        });
+    }
+</script>
 {% endblock %}

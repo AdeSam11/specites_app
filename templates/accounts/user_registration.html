@@ -6,67 +6,74 @@
         <h2 class="text-2xl font-bold text-center text-gray-800">Create an Account</h2>
         <form method="POST" class="mt-4 space-y-4">
             {% csrf_token %}
-            
+
             <div>
                 <label class="block text-sm font-medium text-gray-700">First Name</label>
-                <input type="text" name="first_name" class="mt-1 p-2 w-full border rounded-lg focus:outline-none focus:ring focus:ring-indigo-300">
+                {{ form.first_name }}
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-gray-700">Last Name</label>
-                <input type="text" name="last_name" class="mt-1 p-2 w-full border rounded-lg focus:outline-none focus:ring focus:ring-indigo-300">
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Username</label>
-                <input type="text" name="username" class="mt-1 p-2 w-full border rounded-lg focus:outline-none focus:ring focus:ring-indigo-300">
+                {{ form.last_name }}
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-gray-700">Email</label>
-                <input type="email" name="email" class="mt-1 p-2 w-full border rounded-lg focus:outline-none focus:ring focus:ring-indigo-300">
-                {% if form.email.errors %}
-                    <p class="text-red-600 text-sm mt-1">{{ form.email.errors.0 }}</p>
-                {% endif %}
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Phone Number</label>
-                <input type="tel" name="phone_number" class="mt-1 p-2 w-full border rounded-lg focus:outline-none focus:ring focus:ring-indigo-300">
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700">City</label>
-                <input type="text" name="city" class="mt-1 p-2 w-full border rounded-lg focus:outline-none focus:ring focus:ring-indigo-300">
+                {{ form.email }}
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-gray-700">Country</label>
-                <input type="text" name="country" class="mt-1 p-2 w-full border rounded-lg focus:outline-none focus:ring focus:ring-indigo-300">
+                {{ form.country }}
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700">Password</label>
-                <input type="password" name="password1" class="mt-1 p-2 w-full border rounded-lg focus:outline-none focus:ring focus:ring-indigo-300">
-                {% if form.password1.errors %}
-                    <p class="text-red-600 text-sm mt-1">{{ form.password1.errors.0 }}</p>
-                {% endif %}
+                <label class="block text-sm font-medium text-gray-700">Phone Number</label>
+                <div class="flex space-x-2">
+                    <input type="text" id="country-code" name="country_code" class="w-1/4 bg-gray-200" readonly>
+                    {{ form.phone_number }}
+                </div>
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700">Confirm Password</label>
-                <input type="password" name="password2" class="mt-1 p-2 w-full border rounded-lg focus:outline-none focus:ring focus:ring-indigo-300">
-                {% if form.password2.errors %}
-                    <p class="text-red-600 text-sm mt-1">{{ form.password2.errors.0 }}</p>
-                {% endif %}
+                <label class="block text-sm font-medium text-gray-700">City</label>
+                {{ form.city }}
             </div>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Referral Code (Optional)</label>
-                <input type="text" name="referral_code" class="mt-1 p-2 w-full border rounded-lg focus:outline-none focus:ring focus:ring-indigo-300">
-                {% if form.referral_code.errors %}
-                    <p class="text-red-600 text-sm mt-1">{{ form.referral_code.errors.0 }}</p>
-                {% endif %}
+            <div class="mb-4">
+                <label for="referral_code" class="block text-sm font-medium text-gray-700">Referral Code (Optional)</label>
+                <input type="text" id="referral_code" name="referral_code" value="{{ request.GET.ref }}" 
+                       class="mt-1 p-2 w-full border rounded-md" readonly>
+            </div>
+
+            <div class="mb-4">
+                <label for="password1" class="block text-gray-700 text-sm font-bold mb-2">Password</label>
+                <div class="relative">
+                    <input type="password" id="password1" name="password1" required 
+                        class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500">
+                    <button type="button" onclick="togglePassword('password1', 'togglePassword1')"
+                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-600">
+                        <svg id="togglePassword1" class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7S2 12 2 12z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="password2" class="block text-gray-700 text-sm font-bold mb-2">Confirm Password</label>
+                <div class="relative">
+                    <input type="password" id="password2" name="password2" required 
+                        class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500">
+                    <button type="button" onclick="togglePassword('password2', 'togglePassword2')"
+                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-600">
+                        <svg id="togglePassword2" class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7S2 12 2 12z"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition">
@@ -80,4 +87,65 @@
         </p>
     </div>
 </div>
+
+<script>
+    function togglePassword(inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+
+        if (input.type === "password") {
+            input.type = "text";
+            icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 012.5 12a10.05 10.05 0 0111.375-6.825M19.5 12a7.5 7.5 0 01-7.5 7.5m0-15a7.5 7.5 0 017.5 7.5m-7.5-1.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3z"/>`;
+        } else {
+            input.type = "password";
+            icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7S2 12 2 12z"/>`;
+        }
+    }
+
+    const countrySelect = document.getElementById("id_country");
+    const countryCodeInput = document.getElementById("country-code");
+
+    const countryCodes = {
+        "AF": "+93", "AL": "+355", "DZ": "+213", "AD": "+376", "AO": "+244", "AG": "+1-268", 
+        "AR": "+54", "AM": "+374", "AU": "+61", "AT": "+43", "AZ": "+994", "BS": "+1-242", 
+        "BH": "+973", "BD": "+880", "BB": "+1-246", "BY": "+375", "BE": "+32", "BZ": "+501", 
+        "BJ": "+229", "BT": "+975", "BO": "+591", "BA": "+387", "BW": "+267", "BR": "+55", 
+        "BN": "+673", "BG": "+359", "BF": "+226", "BI": "+257", "KH": "+855", "CM": "+237", 
+        "CA": "+1", "CV": "+238", "CF": "+236", "TD": "+235", "CL": "+56", "CN": "+86", 
+        "CO": "+57", "KM": "+269", "CG": "+242", "CD": "+243", "CR": "+506", "CI": "+225", 
+        "HR": "+385", "CU": "+53", "CY": "+357", "CZ": "+420", "DK": "+45", "DJ": "+253", 
+        "DM": "+1-767", "DO": "+1-809", "EC": "+593", "EG": "+20", "SV": "+503", "GQ": "+240", 
+        "ER": "+291", "EE": "+372", "ET": "+251", "FJ": "+679", "FI": "+358", "FR": "+33", 
+        "GA": "+241", "GM": "+220", "GE": "+995", "DE": "+49", "GH": "+233", "GR": "+30", 
+        "GD": "+1-473", "GT": "+502", "GN": "+224", "GW": "+245", "GY": "+592", "HT": "+509", 
+        "HN": "+504", "HU": "+36", "IS": "+354", "IN": "+91", "ID": "+62", "IR": "+98", 
+        "IQ": "+964", "IE": "+353", "IL": "+972", "IT": "+39", "JM": "+1-876", "JP": "+81", 
+        "JO": "+962", "KZ": "+7", "KE": "+254", "KI": "+686", "KW": "+965", "KG": "+996", 
+        "LA": "+856", "LV": "+371", "LB": "+961", "LS": "+266", "LR": "+231", "LY": "+218", 
+        "LI": "+423", "LT": "+370", "LU": "+352", "MG": "+261", "MW": "+265", "MY": "+60", 
+        "MV": "+960", "ML": "+223", "MT": "+356", "MH": "+692", "MR": "+222", "MU": "+230", 
+        "MX": "+52", "FM": "+691", "MD": "+373", "MC": "+377", "MN": "+976", "ME": "+382", 
+        "MA": "+212", "MZ": "+258", "MM": "+95", "NA": "+264", "NR": "+674", "NP": "+977", 
+        "NL": "+31", "NZ": "+64", "NI": "+505", "NE": "+227", "NG": "+234", "KP": "+850", 
+        "NO": "+47", "OM": "+968", "PK": "+92", "PW": "+680", "PA": "+507", "PG": "+675", 
+        "PY": "+595", "PE": "+51", "PH": "+63", "PL": "+48", "PT": "+351", "QA": "+974", 
+        "RO": "+40", "RU": "+7", "RW": "+250", "WS": "+685", "SM": "+378", "ST": "+239", 
+        "SA": "+966", "SN": "+221", "RS": "+381", "SC": "+248", "SL": "+232", "SG": "+65", 
+        "SK": "+421", "SI": "+386", "SB": "+677", "SO": "+252", "ZA": "+27", "KR": "+82", 
+        "SS": "+211", "ES": "+34", "LK": "+94", "SD": "+249", "SR": "+597", "SE": "+46", 
+        "CH": "+41", "SY": "+963", "TW": "+886", "TJ": "+992", "TZ": "+255", "TH": "+66", 
+        "TL": "+670", "TG": "+228", "TO": "+676", "TT": "+1-868", "TN": "+216", "TR": "+90", 
+        "TM": "+993", "UG": "+256", "UA": "+380", "AE": "+971", "GB": "+44", "US": "+1", 
+        "UY": "+598", "UZ": "+998", "VU": "+678", "VA": "+39", "VE": "+58", "VN": "+84", 
+        "YE": "+967", "ZM": "+260", "ZW": "+263"
+};
+
+
+    countrySelect.addEventListener("change", function() {
+        const selectedCountry = countrySelect.value;
+        countryCodeInput.value = countryCodes[selectedCountry] || "";
+    });
+</script>
+
 {% endblock %}

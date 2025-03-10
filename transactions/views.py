@@ -1,18 +1,25 @@
 import requests
 import json
-from decimal import Decimal
+from decimal import Decimal, ROUND_DOWN
 from django.conf import settings
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.contrib import messages
+from django.utils.crypto import get_random_string
+from django.urls import reverse
+from django.contrib.auth.tokens import default_token_generator
+from django.template.loader import render_to_string
 from django.views.decorators.csrf import csrf_exempt
 from django.core.mail import send_mail
 from .models import CryptoDeposit, Withdrawal, UserProfile
 
+from django.contrib.auth import get_user_model
+
 # NOWPayments API credentials
 NOWPAYMENTS_API_KEY = settings.NOWPAYMENTS_API_KEY
 NOWPAYMENTS_API_URL = "https://api.nowpayments.io/v1/invoice"
+NOWPAYMENTS_RATE_API = "https://api.nowpayments.io/v1/rate"
 
 @login_required
 def deposit_money(request):
@@ -25,20 +32,20 @@ def deposit_money(request):
 
         amount = float(amount)
 
-        # Create a deposit record with "waiting" status
-        deposit = CryptoDeposit.objects.create(
-            user=request.user, amount=amount, payment_status="waiting"
-        )
-
         # Prepare API request
         headers = {
             "x-api-key": NOWPAYMENTS_API_KEY,
             "Content-Type": "application/json"
         }
+        
+        # Create a deposit record with "waiting" status
+        deposit = CryptoDeposit.objects.create(
+            user=request.user, amount=amount, payment_status="waiting"
+        )
 
         payload = {
-            "price_amount": amount,
-            "price_currency": "usd",
+            "price_amount": float(amount),
+            "price_currency": "usdttrc20",
             "pay_currency": "usdttrc20",  
             "ipn_callback_url": settings.NOWPAYMENTS_CALLBACK_URL,
             "order_id": str(deposit.id),
@@ -89,12 +96,13 @@ def nowpayments_webhook(request):
             deposit.payment_status = status
             deposit.save()
 
-            deposit.amount = Decimal(deposit.amount)
+            if status in ["confirmed", "finished"]:
+                deposit.amount = Decimal(deposit.amount)
 
-            if status == "confirmed":
+                # Update user balances
                 deposit.user.account_profile.balance += deposit.amount
                 deposit.user.account_profile.withdrawable_balance += deposit.amount
-                deposit.user.profile.save()
+                deposit.user.account_profile.save()
 
                 # Send Email Notification
                 send_mail(
@@ -213,6 +221,54 @@ def create_withdrawal_password(request):
         return redirect("transactions:withdraw_money")
 
     return render(request, "transactions/create_withdrawal_password.html")
+
+@login_required
+def reset_withdrawal_password_request(request):
+    """Handles sending an email with a reset link."""
+    if request.method == "POST":
+        user = request.user
+        token = default_token_generator.make_token(user)
+        reset_link = request.build_absolute_uri(reverse("transactions:reset_withdrawal_password", args=[user.pk, token]))
+
+        # Send reset email
+        send_mail(
+            "Reset Your Withdrawal Password",
+            f"Click the link to reset your withdrawal password: {reset_link}",
+            settings.EMAIL_HOST_USER,
+            [user.email],
+            fail_silently=False,
+        )
+
+        messages.success(request, "A password reset link has been sent to your email.")
+        return redirect("transactions:withdraw_money")
+
+    return render(request, "transactions/reset_withdrawal_password_request.html")
+
+@login_required
+def reset_withdrawal_password(request, user_id, token):
+    """Handles resetting the withdrawal password after clicking the reset link."""
+    User = get_user_model()
+    user = User.objects.filter(pk=user_id).first()
+
+    if not user or not default_token_generator.check_token(user, token):
+        messages.error(request, "Invalid or expired reset link.")
+        return redirect("transactions:withdraw_money")
+
+    if request.method == "POST":
+        new_password = request.POST.get("new_password")
+        confirm_password = request.POST.get("confirm_password")
+
+        if new_password != confirm_password:
+            messages.error(request, "Passwords do not match.")
+            return redirect(request.path)
+
+        user.transaction_profile.withdrawal_password = new_password
+        user.transaction_profile.save()
+
+        messages.success(request, "Your withdrawal password has been reset successfully.")
+        return redirect("transactions:withdraw_money")
+
+    return render(request, "transactions/reset_withdrawal_password.html", {"user": user})
 
 @login_required
 def withdrawal_history(request):

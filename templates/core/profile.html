@@ -1,4 +1,5 @@
 {% extends "core/base.html" %}
+
 {% block content %}
 <div class="container mx-auto my-12 px-6">
     <div class="bg-white p-8 rounded-2xl shadow-lg max-w-lg mx-auto">
@@ -12,19 +13,6 @@
                     </div>
                 {% endfor %}
             </div>
-        {% endif %}
-
-        <!-- Show Form Errors -->
-        {% if password_form.errors %}
-        <div class="bg-red-100 text-red-700 p-4 rounded-lg mb-4">
-            <ul class="list-disc list-inside">
-                {% for field, errors in password_form.errors.items %}
-                    {% for error in errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                {% endfor %}
-            </ul>
-        </div>
         {% endif %}
 
         <div class="space-y-4">
@@ -45,6 +33,27 @@
             </div>
         </div>
 
+        <!-- Profile Update Form -->
+        <div class="mt-6">
+            <form method="post" class="space-y-4">
+                {% csrf_token %}
+                
+                <div>
+                    <label class="block text-gray-700 font-medium">Date of Birth</label>
+                    {{ profile_form.date_of_birth }}
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 font-medium">National ID Number</label>
+                    {{ profile_form.national_id_number }}
+                </div>
+
+                <button type="submit" name="update_profile" class="w-full bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
+                    Save Changes
+                </button>
+            </form>
+        </div>
+
         <!-- Change Password Button -->
         <div class="mt-6 text-center">
             <button id="show-password-form" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
@@ -52,7 +61,7 @@
             </button>
         </div>
 
-        <!-- Stylish Change Password Form (Hidden Initially) -->
+        <!-- Change Password Form -->
         <div id="password-form-container" class="hidden mt-6 bg-gray-50 p-6 rounded-xl shadow-md">
             <h3 class="text-xl font-semibold text-gray-900 text-center mb-4">Change Password</h3>
             <form method="post" class="space-y-4">
@@ -60,20 +69,20 @@
                 
                 <div>
                     <label class="block text-gray-700 font-medium">Current Password</label>
-                    <input type="password" name="old_password" class="w-full px-4 py-2 mt-1 border rounded-lg focus:ring-2 focus:ring-blue-400" placeholder="Enter current password" required>
+                    {{ password_form.old_password }}
                 </div>
 
                 <div>
                     <label class="block text-gray-700 font-medium">New Password</label>
-                    <input type="password" name="new_password1" class="w-full px-4 py-2 mt-1 border rounded-lg focus:ring-2 focus:ring-blue-400" placeholder="Enter new password" required>
+                    {{ password_form.new_password1 }}
                 </div>
 
                 <div>
                     <label class="block text-gray-700 font-medium">Confirm New Password</label>
-                    <input type="password" name="new_password2" class="w-full px-4 py-2 mt-1 border rounded-lg focus:ring-2 focus:ring-blue-400" placeholder="Confirm new password" required>
+                    {{ password_form.new_password2 }}
                 </div>
 
-                <button type="submit" class="w-full bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">
+                <button type="submit" name="change_password" class="w-full bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">
                     Update Password
                 </button>
             </form>
@@ -81,7 +90,6 @@
     </div>
 </div>
 
-<!-- JavaScript for toggling the password form -->
 <script>
     document.getElementById("show-password-form").addEventListener("click", function() {
         document.getElementById("password-form-container").classList.toggle("hidden");
