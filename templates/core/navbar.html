@@ -22,11 +22,11 @@
         <a href="{% url 'transactions:withdraw_money' %}" class="text-white hover:text-gray-300">Withdraw</a>
         
         <!-- Transaction History Dropdown (Desktop) -->
-        <div class="relative group">
-            <button class="text-white hover:text-gray-300 focus:outline-none">
+        <div class="relative">
+            <button id="transaction-btn" class="text-white hover:text-gray-300 focus:outline-none">
                 Transaction History ▼
             </button>
-            <div class="absolute hidden group-hover:block bg-white text-black mt-2 rounded shadow-lg w-48">
+            <div id="transaction-dropdown" class="hidden absolute bg-white text-black mt-2 rounded shadow-lg w-48">
                 <a href="{% url 'transactions:deposit_history' %}" class="block px-4 py-2 hover:bg-gray-200">Deposit History</a>
                 <a href="{% url 'transactions:withdrawal_history' %}" class="block px-4 py-2 hover:bg-gray-200">Withdrawal History</a>
                 <a href="{% url 'investment:investment_history' %}" class="block px-4 py-2 hover:bg-gray-200">Investment History</a>
@@ -107,6 +107,20 @@
 
         if (!document.getElementById('transaction-history-btn').contains(event.target) &&
             !transactionDropdown.contains(event.target)) {
+            transactionDropdown.classList.add('hidden');
+        }
+    });
+
+    document.getElementById('transaction-btn').addEventListener('click', function () {
+        document.getElementById('transaction-dropdown').classList.toggle('hidden');
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function (event) {
+        let transactionDropdown = document.getElementById('transaction-dropdown');
+        let transactionBtn = document.getElementById('transaction-btn');
+
+        if (!transactionBtn.contains(event.target) && !transactionDropdown.contains(event.target)) {
             transactionDropdown.classList.add('hidden');
         }
     });

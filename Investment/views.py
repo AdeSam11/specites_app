@@ -84,4 +84,4 @@ def portfolio_view(request):
         "total_invested": total_invested,
         "expected_total": expected_total,
     }
-    return render(request, "investment/portfolio.html", context)
+    return render(request, "Investment/portfolio.html", context)

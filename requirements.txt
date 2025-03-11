@@ -20,3 +20,4 @@ python-dotenv
 dj-database-url
 gunicorn
 django-countries
+whitenoise
