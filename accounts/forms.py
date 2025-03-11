@@ -19,7 +19,6 @@ class UserRegistrationForm(UserCreationForm):
         widget=forms.TextInput(attrs={'readonly': 'readonly', 'class': 'bg-gray-200'}),
     )
     country = CountryField().formfield(
-        max_length=3,
         widget=CountrySelectWidget(attrs={'class': 'form-control'})
     )
     referral_code = forms.CharField(
