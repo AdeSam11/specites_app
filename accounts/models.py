@@ -12,7 +12,7 @@ class User(AbstractUser):
     email = models.EmailField(unique=True, null=False, blank=False)
     phone_number = models.CharField(max_length=15, unique=True, blank=False, null=False)
     country_code = models.CharField(max_length=6, blank=False, null=True)  # Store country code separately
-    country = CountryField(blank_label="(Select country)")
+    country = CountryField(blank_label="(Select country)", max_length=3)
 
     objects = UserManager()
 
