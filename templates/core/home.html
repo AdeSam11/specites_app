@@ -52,6 +52,41 @@
         </div>
     </div>
 
+    <!-- Investment Form Section -->
+    <div class="bg-white p-6 rounded-2xl shadow-md max-w-md mx-auto mt-12">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">To Invest - Choose an Amount and Investment Plan</h2>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="p-4 mb-4 text-white rounded-lg {% if message.tags == 'success' %}bg-green-500{% else %}bg-red-500{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST" action="{% url 'Investment:invest' %}" id="investment-form">
+            {% csrf_token %}
+            <label class="block text-gray-700">Amount to Invest (Min: $10)</label>
+            <input type="number" id="amount" name="amount" min="10" step="0.01" class="w-full border rounded-lg p-2 mb-4" required>
+
+            <label class="block text-gray-700">Select Investment Plan</label>
+            <select id="plan" name="plan_duration" class="w-full border rounded-lg p-2 mb-4" required>
+                <option value="15">10% for 15 days</option>
+                <option value="30">20% for 30 days</option>
+                <option value="60">45% for 60 days</option>
+                <option value="90">70% for 90 days</option>
+                <option value="180">150% for 180 days</option>
+                <option value="365">300% for 365 days</option>
+                <option value="730">600% for 730 days</option>
+            </select>
+
+            <label class="block text-gray-700">Expected Returns</label>
+            <input type="text" id="expected_return" class="w-full border rounded-lg p-2 mb-4 bg-gray-200" readonly>
+
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg w-full">Invest</button>
+        </form>
+    </div>
+
     <!-- Top 10 Investors Section -->
     <div class="mt-10 bg-white p-6 rounded-2xl shadow-md">
         <h2 class="text-2xl font-bold text-gray-900 mb-4">Top 10 Investors</h2>
@@ -111,5 +146,117 @@
             </tbody>
         </table>
     </div>
-</div>        
+
+    <!-- Top 10 Most Recent Activities Section -->
+    <div class="mt-10 bg-white p-6 rounded-2xl shadow-md">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Top 10 Most Recent Activities</h2>
+        <table class="w-full border-collapse border border-gray-300">
+            <thead>
+                <tr class="bg-gray-800 text-white">
+                    <th class="p-3 text-left">#</th>
+                    <th class="p-3 text-left">Date</th>
+                    <th class="p-3 text-left">Transaction Type</th>
+                    <th class="p-3 text-left">Status</th>
+                    <th class="p-3 text-left">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transaction in recent_activities %}
+                    <tr class="border-b border-gray-300">
+                        <td class="p-3">{{ forloop.counter }}</td>
+                        <td class="p-3">{{ transaction.created_at|date:"M d, Y H:i" }}</td>
+                        <td class="p-3">{{ transaction.transaction_type|title }}</td>
+                        <td class="p-3">
+                            <span class="{% if transaction.status == 'confirmed' or transaction.status == 'approved' %}text-green-500{% else %}text-red-500{% endif %}">
+                                {{ transaction.status|title }}
+                            </span>
+                        </td>
+                        <td class="p-3">${{ transaction.amount }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="p-3 text-center text-gray-500">No recent activities found.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<!-- Footer Section -->
+<div class="bg-white container mx-auto px-6 text-center">
+    <!-- Featured In Section -->
+    <h3 class="text-2xl font-bold text-gray-800 pt-10">As featured in</h3>
+    <div class="flex flex-wrap justify-center items-center gap-6 mt-4 text-gray-500">
+        <img src="{% static 'img/NOWPayments.png' %}" alt="NOWPayments Logo" class="w-28 h-20">
+        <img src="{% static 'img/bybit2.png' %}" alt="ByBit Logo" class="w-20 h-15">
+        <img src="{% static 'img/coinbase.png' %}" alt="Coinbase Logo" class="w-25 h-20">
+        <img src="{% static 'img/cmc.png' %}" alt="CoinMarketCap Logo" class="w-25 h-20">
+    </div>
+
+    <!-- Logo & Branding -->
+    <div class="flex items-center space-x-3 mt-10 pt-10">
+        <img src="{% static 'img/logo.png' %}" alt="Specites Logo" class="w-20 h-15">
+        <span class="text-2xl font-bold text-blue-500">Specites</span>
+    </div>    
+    
+    <!-- Footer Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mt-12 text-gray-700">
+        <!-- Investment Plans -->
+        <div class="text-center md:text-left">
+            <h4 class="text-lg font-bold text-gray-800">Investment Plans</h4>
+            <ul class="mt-2 space-y-1">
+                <li>10% for 15 days</li>
+                <li>20% for 1 month</li>
+                <li>45% for 2 months</li>
+                <li>70% for 3 months</li>
+                <li>150% for 6 months</li>
+                <li>300% for 1 year</li>
+                <li>600% for 2 years</li>
+            </ul>
+        </div>
+
+        <!-- Company Links -->
+        <div class="text-center md:text-left">
+            <h4 class="text-lg font-bold text-gray-800">Company</h4>
+            <ul class="mt-2 space-y-1">
+                <li><a href="{% url 'about' %}" class="hover:text-blue-500 transition">About</a></li>
+                <li><a href="{% url 'about' %}" class="hover:text-blue-500 transition">FAQs</a></li>
+                <li><a href="{% url 'help' %}" class="hover:text-blue-500 transition">Help</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Social Media Icons -->
+    <div class="flex justify-center space-x-6 mt-10 text-gray-500">
+        <a href="#" class="hover:text-blue-500 text-2xl transition"><i class="fab fa-facebook"></i></a>
+        <a href="#" class="hover:text-pink-500 text-2xl transition"><i class="fab fa-instagram"></i></a>
+        <a href="#" class="hover:text-blue-400 text-2xl transition"><i class="fab fa-twitter"></i></a>
+        <a href="#" class="hover:text-black text-2xl transition"><i class="fab fa-tiktok"></i></a>
+        <a href="#" class="hover:text-red-500 text-2xl transition"><i class="fab fa-youtube"></i></a>
+    </div>
+
+    <!-- Copyright -->
+    <p class="text-gray-500 mt-12 text-sm pb-10">&copy; 2025 Specites. All rights reserved.</p>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const amountInput = document.getElementById("amount");
+    const planSelect = document.getElementById("plan");
+    const expectedReturnInput = document.getElementById("expected_return");
+
+    const rates = { 15: 1.1, 30: 1.2, 60: 1.45, 90: 1.7, 180: 2.5, 365: 4.0, 730: 7.0 };
+
+    function updateExpectedReturn() {
+        const amount = parseFloat(amountInput.value) || 0;
+        const plan = parseInt(planSelect.value);
+        expectedReturnInput.value = `$${(amount * rates[plan]).toFixed(2)}`;
+    }
+
+    amountInput.addEventListener("input", updateExpectedReturn);
+    planSelect.addEventListener("change", updateExpectedReturn);
+});
+</script>
 {% endblock %}

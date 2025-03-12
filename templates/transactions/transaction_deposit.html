@@ -5,7 +5,7 @@
 <div class="container mx-auto my-12 px-6">
     <div class="bg-white p-6 rounded-2xl shadow-md max-w-md mx-auto">
         <h2 class="text-2xl font-bold text-gray-900 mb-4">Deposit USDT</h2>
-        <form method="POST" action="{% url 'transactions:deposit_money' %}">
+        <form method="POST" action="{% url 'transactions:deposit_money' %}" onsubmit="return confirmDeposit()">
             {% csrf_token %}
             <label for="amount" class="block text-gray-700">Amount (Min: $10)</label>
             <input type="number" name="amount" id="amount" min="10" step="0.01"
@@ -23,4 +23,10 @@
         </div>
     </div>
 </div>
+
+<script>
+    function confirmDeposit() {
+        return confirm("Please note: TRX (Tron) is the native token of the TRC20 network. Use a USDT TRC20 wallet for this transaction.");
+    }
+</script>
 {% endblock %}

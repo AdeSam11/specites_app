@@ -1,18 +1,16 @@
 import requests
 import json
-from decimal import Decimal, ROUND_DOWN
+from decimal import Decimal
 from django.conf import settings
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.contrib import messages
-from django.utils.crypto import get_random_string
 from django.urls import reverse
 from django.contrib.auth.tokens import default_token_generator
-from django.template.loader import render_to_string
 from django.views.decorators.csrf import csrf_exempt
 from django.core.mail import send_mail
-from .models import CryptoDeposit, Withdrawal, UserProfile
+from .models import CryptoDeposit, Withdrawal, UserProfile, Transaction
 
 from django.contrib.auth import get_user_model
 
@@ -49,7 +47,7 @@ def deposit_money(request):
             "pay_currency": "usdttrc20",  
             "ipn_callback_url": settings.NOWPAYMENTS_CALLBACK_URL,
             "order_id": str(deposit.id),
-            "order_description": f"Deposit for {request.user.username}",
+            "order_description": f"Deposit for {request.user.first_name}",
             "success_url": request.build_absolute_uri('/transactions/deposit-success/'),
             "cancel_url": request.build_absolute_uri('/transactions/deposit-failed/'),
         }
@@ -103,6 +101,13 @@ def nowpayments_webhook(request):
                 deposit.user.account_profile.balance += deposit.amount
                 deposit.user.account_profile.withdrawable_balance += deposit.amount
                 deposit.user.account_profile.save()
+
+                Transaction.objects.create(
+                    user=deposit.user,
+                    transaction_type="deposit",
+                    amount=deposit.amount,
+                    status=status
+                )            
 
                 # Send Email Notification
                 send_mail(
@@ -186,6 +191,14 @@ def withdraw_money(request):
             status="pending"
         )
 
+        # Log transaction
+        Transaction.objects.create(
+            user=request.user,
+            transaction_type="withdrawal",
+            amount=amount,
+            status="pending"
+        )
+
         # Send email notification to specites
         send_mail(
             "New Withdrawal Request",
@@ -196,7 +209,7 @@ def withdraw_money(request):
         )
 
         messages.success(request, "Withdrawal request submitted. Pending approval.")
-        return redirect("core:home")
+        return redirect("home")
 
     return render(request, "transactions/transaction_withdraw.html")
 

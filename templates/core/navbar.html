@@ -42,7 +42,7 @@
         <!-- Balance Dropdown -->
         <div class="relative">
             <button id="balance-btn" class="text-white font-semibold bg-blue-600 px-3 py-1.5 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none">
-                💰 ${{ request.user.account_profile.balance }}
+                ${{ request.user.account_profile.balance }}
             </button>
             <div id="balance-dropdown" class="hidden absolute right-0 mt-2 w-40 bg-white text-black rounded shadow-lg">
                 <a href="{% url 'transactions:deposit_money' %}" class="block px-4 py-2 hover:bg-gray-200">Deposit</a>

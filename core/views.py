@@ -11,6 +11,7 @@ from Investment.models import Investment
 from .models import Referral
 from django.views.generic import TemplateView
 from django.contrib.auth import get_user_model
+from transactions.models import Transaction
 
 
 def home(request):
@@ -43,7 +44,8 @@ def home(request):
 
     # Get top 10 investors ranked by total invested amount
     top_investors = Profile.objects.order_by('-total_invested')[:10]
-
+    recent_activities = Transaction.objects.filter(user=request.user).order_by('-created_at')[:10]
+    
     # Get the latest 10 users who recently joined
     User = get_user_model()
     latest_users = User.objects.order_by('-date_joined')[:10]
@@ -55,6 +57,7 @@ def home(request):
         'total_yielded': getattr(user_profile, 'total_yielded', 0.00),
         'top_investors': top_investors,
         'latest_users': latest_users,
+        'recent_activities': recent_activities,
     }
     return render(request, 'core/home.html', context) 
 
