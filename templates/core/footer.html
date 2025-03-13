@@ -1,22 +1,27 @@
 {% if request.user.is_authenticated %}
     <footer id="dynamic-footer" class="fixed bottom-0 left-0 w-full bg-gray-900 text-white shadow-lg border-t border-blue-800">
-        <nav class="grid grid-cols-5 gap-0 py-2 text-xs sm:text-xs md:text-base">
+        <nav class="grid grid-cols-5 gap-0 py-2 text-sm sm:text-sm md:text-sm">
             <a href="{% url 'home' %}" class="flex flex-col items-center px-2 py-1 hover:bg-gray-800 transition duration-300">
-                <span>🏠 Home</span>
+                <span class="block text-lg">🏠</span>
+                <span class="block">Home</span>
             </a>
             <a href="{% url 'Investment:portfolio' %}" class="flex flex-col items-center px-2 py-1 hover:bg-gray-800 transition duration-300">
-                <span>📁 Portfolio</span>
+                <span class="block text-lg">📁</span>
+                <span class="block">Portfolio</span>
             </a>
             <a href="{% url 'Investment:invest' %}" class="flex flex-col items-center px-2 py-1 hover:bg-gray-800 transition duration-300">
-                <span>💰 Invest</span>
+                <span class="block text-lg">💰</span>
+                <span class="block">Invest</span>
             </a>
             <a href="{% url 'trade:trade_index' %}" class="flex flex-col items-center px-2 py-1 hover:bg-gray-800 transition duration-300">
-                <span>📊 Trade</span>
+                <span class="block text-lg">📊</span>
+                <span class="block">Trade</span>
             </a>
             <a href="{% url 'accounts:history' %}" class="flex flex-col items-center px-2 py-1 hover:bg-gray-800 transition duration-300">
-                <span>📜 History</span>
+                <span class="block text-lg">📜</span>
+                <span class="block">History</span>
             </a>
-        </nav>
+        </nav>        
     </footer>
 
 
