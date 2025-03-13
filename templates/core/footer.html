@@ -1,6 +1,6 @@
 {% if request.user.is_authenticated %}
     <footer id="dynamic-footer" class="fixed bottom-0 left-0 w-full bg-gray-900 text-white shadow-lg border-t border-blue-800">
-        <nav class="grid grid-cols-5 gap-0 py-2 text-sm sm:text-sm md:text-sm">
+        <nav class="grid grid-cols-5 gap-0 py-2 text-xs sm:text-xs md:text-base">
             <a href="{% url 'home' %}" class="flex flex-col items-center px-2 py-1 hover:bg-gray-800 transition duration-300">
                 <span>🏠 Home</span>
             </a>

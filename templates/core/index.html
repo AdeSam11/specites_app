@@ -96,7 +96,7 @@
                             <td class="p-3 border border-gray-600">{{ forloop.counter }}</td>
                             <td class="p-3 border border-gray-600">{{ investor.user.get_full_name }}</td>
                             <td class="p-3 border border-gray-600">${{ investor.total_invested }}</td>
-                            <td class="p-3 border border-gray-600">{{ investor.user.country }}</td>
+                            <td class="p-3 border border-gray-600">{{ investor.user.country.name }}</td>
                         </tr>
                     {% endif %}
                     {% endfor %}
