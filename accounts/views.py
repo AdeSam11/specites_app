@@ -39,8 +39,8 @@ class UserRegistrationView(View):
             referral_code = form.cleaned_data.get("referral_code")
             if referral_code:
                 try:
-                    user = form.save()
                     referrer_profile = User.objects.get(referral_code=referral_code)
+                    user = form.save()
                     Referral.objects.create(referrer=referrer_profile, referred_user=user)
                 except User.DoesNotExist:
                     messages.error(request, "Invalid referral code, try again")

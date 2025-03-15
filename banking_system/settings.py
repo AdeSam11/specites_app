@@ -159,8 +159,8 @@ EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 
 # NOWPayments Configuration
-NOWPAYMENTS_API_KEY = os.getenv("NOWPAYMENTS_API_KEY")
-NOWPAYMENTS_CALLBACK_URL = "https://specites-web-app.onrender.com/transactions/webhook/"
+PLISIO_API_KEY = os.getenv("PLISIO_API_KEY")
+PLISIO_CALLBACK_URL = "https://specites-web-app.onrender.com/transactions/webhook/"
 
 from django.contrib.messages import constants as messages
 

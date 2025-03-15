@@ -1,13 +1,13 @@
 from django.urls import path
 
-from transactions.views import deposit_money, nowpayments_webhook, deposit_success, deposit_failed, withdraw_money, deposit_history, create_withdrawal_password, withdrawal_history, reset_withdrawal_password_request, reset_withdrawal_password
+from transactions.views import deposit_money, plisio_webhook, deposit_success, deposit_failed, withdraw_money, deposit_history, create_withdrawal_password, withdrawal_history, reset_withdrawal_password_request, reset_withdrawal_password
 
 app_name = 'transactions'
 
 
 urlpatterns = [
     path("deposit/", deposit_money, name="deposit_money"),
-    path("webhook/", nowpayments_webhook, name="nowpayments_webhook"),
+    path("webhook/", plisio_webhook, name="plisio_webhook"),
     path("deposit-success/", deposit_success, name="deposit_success"),
     path("deposit-failed/", deposit_failed, name="deposit_failed"),
     path("deposit-history/", deposit_history, name="deposit_history"),

@@ -14,10 +14,8 @@ from .models import CryptoDeposit, Withdrawal, UserProfile, Transaction
 
 from django.contrib.auth import get_user_model
 
-# NOWPayments API credentials
-NOWPAYMENTS_API_KEY = settings.NOWPAYMENTS_API_KEY
-NOWPAYMENTS_API_URL = "https://api.nowpayments.io/v1/invoice"
-NOWPAYMENTS_RATE_API = "https://api.nowpayments.io/v1/rate"
+PLISIO_API_KEY = settings.PLISIO_API_KEY
+PLISIO_API_URL = "https://api.plisio.net/api/v1/invoices/new"
 
 @login_required
 def deposit_money(request):
@@ -30,62 +28,69 @@ def deposit_money(request):
 
         amount = float(amount)
 
-        # Prepare API request
-        headers = {
-            "x-api-key": NOWPAYMENTS_API_KEY,
-            "Content-Type": "application/json"
-        }
-        
         # Create a deposit record with "waiting" status
         deposit = CryptoDeposit.objects.create(
-            user=request.user, amount=amount, payment_status="waiting"
+            user=request.user, 
+            amount=amount, 
+            payment_status="waiting"
         )
 
-        payload = {
-            "price_amount": float(amount),
-            "price_currency": "usdttrc20",
-            "pay_currency": "usdttrc20",  
-            "ipn_callback_url": settings.NOWPAYMENTS_CALLBACK_URL,
-            "order_id": str(deposit.id),
-            "order_description": f"Deposit for {request.user.first_name}",
-            "success_url": request.build_absolute_uri('/transactions/deposit-success/'),
-            "cancel_url": request.build_absolute_uri('/transactions/deposit-failed/'),
+        # Prepare GET request parameters
+        params = {
+            "api_key": PLISIO_API_KEY,
+            "order_number": str(deposit.id),
+            "amount": amount,
+            "order_name": f"Deposit for {request.user.first_name}",
+            "success_callback_url": request.build_absolute_uri('/transactions/deposit-success/'),
+            "fail_callback_url": request.build_absolute_uri('/transactions/deposit-failed/'),
+            "callback_url": settings.PLISIO_CALLBACK_URL,
         }
 
-        # Debugging print statements
-        print("Sending payload to NOWPayments:", json.dumps(payload, indent=4))
+        # Debugging print statement
+        print("Sending GET request to Plisio:", PLISIO_API_URL, params)
 
-        response = requests.post(NOWPAYMENTS_API_URL, headers=headers, json=payload)
+        response = requests.get(PLISIO_API_URL, params=params)
         
         try:
             response_data = response.json()
-        except json.JSONDecodeError:
+        except requests.exceptions.JSONDecodeError:
+            print("Plisio Response Error:", response.status_code, response.text)  # Debugging
             messages.error(request, "Invalid response from payment provider.")
             return redirect("transactions:deposit_money")
 
-        print("NOWPayments Response:", response.status_code, response_data)  # Debugging
+        print("Plisio Response:", response.status_code, response_data)  # Debugging
 
-        if response.status_code == 200 and "invoice_url" in response_data:
-            return redirect(response_data["invoice_url"])
-        else:
-            messages.error(request, response_data.get("message", "Payment failed."))
-            return redirect("transactions:deposit_money")
+        if response.status_code == 200 and response_data.get("status") == "success":
+            invoice_data = response_data.get("data", {})
+            invoice_url = invoice_data.get("invoice_url")
+            txn_id = invoice_data.get("txn_id")
+
+            if invoice_url:
+                # Update deposit record with invoice details
+                deposit.transaction_id = txn_id
+                deposit.save()
+
+                # Redirect user to Plisio payment page
+                return redirect(invoice_url)
+
+        # If payment fails
+        messages.error(request, response_data.get("message", "Payment failed."))
+        return redirect("transactions:deposit_money")
 
     return render(request, "transactions/transaction_deposit.html")
 
 
 @csrf_exempt
-def nowpayments_webhook(request):
-    """Handles NOWPayments payment updates."""
+def plisio_webhook(request):
+    """Handles Plisio payment updates."""
     if request.method == "POST":
         try:
             data = json.loads(request.body)  # Load JSON data
 
             print("Webhook received:", json.dumps(data, indent=4))  # Debugging
 
-            payment_id = data.get("payment_id")
-            status = data.get("payment_status")
-            order_id = data.get("order_id")
+            order_id = data.get("order_number")
+            status = data.get("status")  # "completed" means the deposit is successful
 
             deposit = CryptoDeposit.objects.filter(id=order_id).first()
             if not deposit:
@@ -94,7 +99,7 @@ def nowpayments_webhook(request):
             deposit.payment_status = status
             deposit.save()
 
-            if status in ["confirmed", "finished"]:
+            if status == "completed":
                 deposit.amount = Decimal(deposit.amount)
 
                 # Update user balances

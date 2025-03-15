@@ -36,22 +36,22 @@ def invest_view(request):
             if investment.amount > user_profile.balance:
                 messages.error(request, "Insufficient balance. Please deposit more funds.")
                 return redirect("investment:invest")
-
-            # Fetch ongoing investments
-            ongoing_investments = Investment.objects.filter(user=request.user, matured_at__gt=now())
-
-            # Calculate total ongoing investment and expected return
-            ongoing_investment_balance = sum(inv.amount for inv in ongoing_investments)
             
             # Deduct balance and save changes
             user_profile.withdrawable_balance -= investment.amount
             user_profile.balance -= investment.amount
             user_profile.total_invested += investment.amount
-            user_profile.ongoing_investment_balance = ongoing_investment_balance
             
             user_profile.save()
             investment.save()
 
+            ongoing_investments = Investment.objects.filter(user=request.user, matured_at__gt=now())
+            ongoing_investment_balance = sum(inv.amount for inv in ongoing_investments)
+            user_profile.ongoing_investment_balance = ongoing_investment_balance
+
+            user_profile.save()
+            investment.save()
+            
             # Check if user was referred and bonus is not yet given
             referral = Referral.objects.filter(referred_user=request.user, bonus_received=False).first()
             if referral:
