@@ -83,9 +83,13 @@ def deposit_money(request):
 @csrf_exempt
 def plisio_webhook(request):
     """Handles Plisio payment updates."""
-    if request.method == "POST":
+    if request.method in ["POST", "GET"]:
         try:
-            data = json.loads(request.body)  # Load JSON data
+            # Load data from GET parameters if it's a GET request
+            if request.method == "GET":
+                data = request.GET.dict()
+            else:  # If it's POST, read JSON body
+                data = json.loads(request.body)
 
             print("Webhook received:", json.dumps(data, indent=4))  # Debugging
 
