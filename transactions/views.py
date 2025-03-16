@@ -103,7 +103,7 @@ def plisio_webhook(request):
             deposit.payment_status = status
             deposit.save()
 
-            if status == "completed":
+            if status.lower() in ["completed", "confirmed", "finished"]:
                 deposit.amount = Decimal(deposit.amount)
 
                 # Update user balances
