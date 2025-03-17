@@ -85,62 +85,84 @@ def plisio_webhook(request):
     """Handles Plisio payment updates."""
     if request.method in ["POST", "GET"]:
         try:
-            # Load data from GET parameters if it's a GET request
-            if request.method == "GET":
-                data = request.GET.dict()
-            else:  # If it's POST, read JSON body
-                data = json.loads(request.body)
+            data = {}
 
-            print("Webhook received:", json.dumps(data, indent=4))  # Debugging
+            if request.method == "POST":
+                try:
+                    # Attempt JSON body parsing
+                    data = json.loads(request.body)
+                    print("Parsed JSON from POST body.")
+                except json.JSONDecodeError:
+                    # Fallback to POST form-encoded data
+                    data = request.POST.dict()
+                    print("Parsed POST form data.")
+            else:  # GET request
+                data = request.GET.dict()
+                print("Parsed data from GET request.")
+
+            print("Webhook received:", json.dumps(data, indent=4))
 
             order_id = data.get("order_number")
-            status = data.get("status")  # "completed" means the deposit is successful
+            status = data.get("status")
+
+            print(f"Order ID: {order_id}, Status: {status}")
 
             deposit = CryptoDeposit.objects.filter(id=order_id).first()
             if not deposit:
+                print("Deposit not found.")
                 return JsonResponse({"error": "Deposit not found"}, status=400)
+
+            # Avoid processing the same deposit twice
+            if deposit.payment_status.lower() in ["completed", "confirmed", "finished", "paid"]:
+                print("Deposit already processed.")
+                return JsonResponse({"status": "already_processed"}, status=200)
 
             deposit.payment_status = status
             deposit.save()
 
-            if status.lower() in ["completed", "confirmed", "finished"]:
-                deposit.amount = Decimal(deposit.amount)
+            if status in ["completed", "confirmed", "finished", "paid"]:
+                amount_decimal = Decimal(deposit.amount)
 
-                # Update user balances
-                deposit.user.account_profile.balance += deposit.amount
-                deposit.user.account_profile.withdrawable_balance += deposit.amount
+                print(f"Updating balances for {deposit.user.username}, Amount: {amount_decimal}")
+
+                deposit.user.account_profile.balance += amount_decimal
+                deposit.user.account_profile.withdrawable_balance += amount_decimal
                 deposit.user.account_profile.save()
 
                 Transaction.objects.create(
                     user=deposit.user,
                     transaction_type="deposit",
-                    amount=deposit.amount,
+                    amount=amount_decimal,
                     status=status
-                )            
+                )
 
-                # Send Email Notification
                 send_mail(
                     "Deposit Successful",
-                    f"Your deposit of ${deposit.amount} USDT has been confirmed.",
+                    f"Your deposit of ${amount_decimal} USDT has been confirmed.",
                     settings.EMAIL_HOST_USER,
                     [deposit.user.email],
                     fail_silently=False,
                 )
 
+            else:
+                print(f"Deposit not marked complete yet: {status}")
+
             return JsonResponse({"status": "success"}, status=200)
 
         except Exception as e:
-            print("Webhook error:", str(e))  # Debugging
+            print("Webhook error:", str(e))
             return JsonResponse({"error": str(e)}, status=400)
 
     return JsonResponse({"error": "Invalid request"}, status=400)
 
 @login_required
+@csrf_exempt
 def deposit_success(request):
     return render(request, "transactions/deposit_success.html")
 
 
 @login_required
+@csrf_exempt
 def deposit_failed(request):
     return render(request, "transactions/deposit_failed.html")
 
