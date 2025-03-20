@@ -24,4 +24,8 @@ app.conf.beat_schedule = {
         "task": "Investment.tasks.update_daily_yield",
         "schedule": crontab(hour=0, minute=0),  # Runs every midnight
     },
+    "monitor_usdt_deposits_every_2mins": {
+        "task": "transactions.tasks.monitor_user_usdt_deposits",
+        "schedule": 120.0,  # every 2 minutes
+    },
 }

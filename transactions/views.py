@@ -1,5 +1,6 @@
-import requests
-import json
+from tronpy import Tron
+from tronpy.contract import Contract
+from tronpy.providers import HTTPProvider
 from decimal import Decimal
 from django.conf import settings
 from django.shortcuts import render, redirect
@@ -10,150 +11,71 @@ from django.urls import reverse
 from django.contrib.auth.tokens import default_token_generator
 from django.views.decorators.csrf import csrf_exempt
 from django.core.mail import send_mail
-from .models import CryptoDeposit, Withdrawal, UserProfile, Transaction
+from .models import Withdrawal, Transaction, UserProfile
 
 from django.contrib.auth import get_user_model
 
-PLISIO_API_KEY = settings.PLISIO_API_KEY
-PLISIO_API_URL = "https://api.plisio.net/api/v1/invoices/new"
+TRC20_USDT_CONTRACT = 'TXLAQ63Xg1NAzckPwKHvzw7CSEmLMEqcdj'
+TRC20_ABI = [
+    {
+        "inputs": [{"name": "_owner", "type": "address"}],
+        "name": "balanceOf",
+        "outputs": [{"name": "balance", "type": "uint256"}],
+        "stateMutability": "view",
+        "type": "function"
+    }
+]
 
 @login_required
 def deposit_money(request):
     if request.method == "POST":
         amount = request.POST.get("amount")
-
         if not amount or float(amount) < 10:
-            messages.error(request, "Minimum deposit amount is $10.")
+            messages.error(request, "Minimum deposit is $10.")
             return redirect("transactions:deposit_money")
-
-        amount = float(amount)
-
-        # Create a deposit record with "waiting" status
-        deposit = CryptoDeposit.objects.create(
-            user=request.user, 
-            amount=amount, 
-            payment_status="waiting"
-        )
-
-        # Prepare GET request parameters
-        params = {
-            "api_key": PLISIO_API_KEY,
-            "order_number": str(deposit.id),
-            "amount": amount,
-            "order_name": f"Deposit for {request.user.first_name}",
-            "success_callback_url": request.build_absolute_uri('/transactions/deposit-success/'),
-            "fail_callback_url": request.build_absolute_uri('/transactions/deposit-failed/'),
-            "callback_url": settings.PLISIO_CALLBACK_URL,
-        }
-
-        # Debugging print statement
-        print("Sending GET request to Plisio:", PLISIO_API_URL, params)
-
-        response = requests.get(PLISIO_API_URL, params=params)
-        
-        try:
-            response_data = response.json()
-        except requests.exceptions.JSONDecodeError:
-            print("Plisio Response Error:", response.status_code, response.text)  # Debugging
-            messages.error(request, "Invalid response from payment provider.")
-            return redirect("transactions:deposit_money")
-
-        print("Plisio Response:", response.status_code, response_data)  # Debugging
-
-        if response.status_code == 200 and response_data.get("status") == "success":
-            invoice_data = response_data.get("data", {})
-            invoice_url = invoice_data.get("invoice_url")
-            txn_id = invoice_data.get("txn_id")
-
-            if invoice_url:
-                # Update deposit record with invoice details
-                deposit.transaction_id = txn_id
-                deposit.save()
-
-                # Redirect user to Plisio payment page
-                return redirect(invoice_url)
-
-        # If payment fails
-        messages.error(request, response_data.get("message", "Payment failed."))
-        return redirect("transactions:deposit_money")
-
+        request.session['deposit_amount'] = amount
+        return redirect("transactions:deposit_invoice")
     return render(request, "transactions/transaction_deposit.html")
 
+@login_required
+def deposit_invoice(request):
+    amount = request.session.get('deposit_amount')
+    profile = request.user.account_profile
+    wallet_address = profile.wallet_address
 
-@csrf_exempt
-def plisio_webhook(request):
-    """Handles Plisio payment updates."""
-    if request.method in ["POST", "GET"]:
-        try:
-            data = {}
+    qr_code_url = f"https://quickchart.io/qr?text={wallet_address}&size=250"
 
-            if request.method == "POST":
-                try:
-                    # Attempt JSON body parsing
-                    data = json.loads(request.body)
-                    print("Parsed JSON from POST body.")
-                except json.JSONDecodeError:
-                    # Fallback to POST form-encoded data
-                    data = request.POST.dict()
-                    print("Parsed POST form data.")
-            else:  # GET request
-                data = request.GET.dict()
-                print("Parsed data from GET request.")
+    return render(request, "transactions/deposit_invoice.html", {
+        "amount": amount,
+        "wallet_address": wallet_address,
+        "network": "TRC-20",
+        "qr_code_url": qr_code_url
+    })
 
-            print("Webhook received:", json.dumps(data, indent=4))
+@login_required
+def verify_deposit(request):
+    amount = Decimal(request.session.get('deposit_amount', 0))
+    profile = request.user.account_profile
+    user_wallet = profile.wallet_address
 
-            order_id = data.get("order_number")
-            status = data.get("status")
+    client = Tron(HTTPProvider(settings.TRON_RPC_URL))
 
-            print(f"Order ID: {order_id}, Status: {status}")
+    try:
+        contract = client.get_contract(TRC20_USDT_CONTRACT)
+        contract.abi = TRC20_ABI
 
-            deposit = CryptoDeposit.objects.filter(id=order_id).first()
-            if not deposit:
-                print("Deposit not found.")
-                return JsonResponse({"error": "Deposit not found"}, status=400)
+        # Now safely call balanceOf
+        balance_raw = contract.functions.balanceOf(user_wallet)
+        balance = Decimal(balance_raw) / Decimal(1_000_000)
 
-            # Avoid processing the same deposit twice
-            if deposit.payment_status.lower() in ["completed", "confirmed", "finished", "paid"]:
-                print("Deposit already processed.")
-                return JsonResponse({"status": "already_processed"}, status=200)
-
-            deposit.payment_status = status
-            deposit.save()
-
-            if status in ["completed", "confirmed", "finished", "paid"]:
-                amount_decimal = Decimal(deposit.amount)
-
-                print(f"Updating balances for {deposit.user.username}, Amount: {amount_decimal}")
-
-                deposit.user.account_profile.balance += amount_decimal
-                deposit.user.account_profile.withdrawable_balance += amount_decimal
-                deposit.user.account_profile.save()
-
-                Transaction.objects.create(
-                    user=deposit.user,
-                    transaction_type="deposit",
-                    amount=amount_decimal,
-                    status=status
-                )
-
-                send_mail(
-                    "Deposit Successful",
-                    f"Your deposit of ${amount_decimal} USDT has been confirmed.",
-                    settings.EMAIL_HOST_USER,
-                    [deposit.user.email],
-                    fail_silently=False,
-                )
-
-            else:
-                print(f"Deposit not marked complete yet: {status}")
-
-            return JsonResponse({"status": "success"}, status=200)
-
-        except Exception as e:
-            print("Webhook error:", str(e))
-            return JsonResponse({"error": str(e)}, status=400)
-
-    return JsonResponse({"error": "Invalid request"}, status=400)
+        if Decimal(balance) >= amount:
+            return JsonResponse({"status": "success"})
+        else:
+            return JsonResponse({"status": "fail"})
+        
+    except Exception as e:
+        print(f"[ERROR] Verifying deposit failed: {e}")
+        return JsonResponse({"status": "error", "message": "Payment verification failed."})
 
 @login_required
 @csrf_exempt
@@ -168,7 +90,7 @@ def deposit_failed(request):
 
 @login_required
 def deposit_history(request):
-    deposits = CryptoDeposit.objects.filter(user=request.user).order_by("-created_at")
+    deposits = Transaction.objects.filter(user=request.user).order_by("-created_at")
     return render(request, "transactions/deposit_history.html", {"deposits": deposits})
 
 @login_required

@@ -1,5 +1,6 @@
 from django.contrib import admin
 
-from transactions.models import CryptoDeposit
+from transactions.models import Transaction, Withdrawal
 
-admin.site.register(CryptoDeposit)
+admin.site.register(Transaction)
+admin.site.register(Withdrawal)

@@ -10,5 +10,4 @@ def update_daily_yield():
         user_profile = investment.user.account_profile
         daily_yield = (investment.expected_return - investment.amount) / investment.plan_duration
         user_profile.total_yielded += daily_yield
-        user_profile.balance += daily_yield
         user_profile.save()

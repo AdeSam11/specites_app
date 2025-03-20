@@ -21,3 +21,5 @@ dj-database-url
 gunicorn
 django-countries
 whitenoise
+web3
+tronpy

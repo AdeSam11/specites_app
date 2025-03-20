@@ -1,30 +1,8 @@
 from django.db import models
 from django.conf import settings
-from django.core.validators import MinValueValidator
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
-
-class CryptoDeposit(models.Model):
-    STATUS_CHOICES = [
-        ("pending", "Pending"),
-        ("confirmed", "Confirmed"),
-        ("failed", "Failed"),
-    ]
-
-    user = models.ForeignKey(User, related_name='deposit', on_delete=models.CASCADE)
-    amount = models.DecimalField(
-        max_digits=10, decimal_places=2, validators=[MinValueValidator(10)]
-    )
-    payment_id = models.CharField(max_length=255, unique=False)
-    payment_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
-    transaction_id = models.CharField(max_length=100, unique=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"{self.user.username} - {self.amount} USDT - {self.payment_status}"
-
 
 class Withdrawal(models.Model):
     STATUS_CHOICES = [
@@ -38,7 +16,7 @@ class Withdrawal(models.Model):
     wallet_address = models.CharField(max_length=255)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
-    withdrawal_password = models.CharField(max_length=128)  # Store securely, hash it
+    withdrawal_password = models.CharField(max_length=128)
 
     def __str__(self):
         return f"Withdrawal {self.id} - {self.user.username}"
@@ -74,5 +52,4 @@ class Transaction(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.transaction_type} - {self.amount} - {self.status}"
-    
     

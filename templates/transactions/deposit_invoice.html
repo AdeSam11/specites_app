@@ -1,0 +1,53 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<div class="max-w-md mx-auto mt-10 p-6 bg-white shadow rounded text-center">
+  <h2 class="text-xl font-bold mb-4">Deposit Details</h2>
+
+  <p class="mb-2"><strong>Amount:</strong> ${{ amount }} USDT</p>
+  <p class="mb-2"><strong>Network:</strong> TRC-20 (TRON)</p>
+  <p class="mb-2"><strong>Wallet Address:</strong></p>
+  <div class="bg-gray-100 p-2 rounded mb-2 break-words">{{ wallet_address }}</div>
+
+  <!-- QR Code -->
+  <img src="{{ qr_code_url }}" alt="QR Code" class="mx-auto mb-4 w-48 h-48">
+
+  <!-- Copy Wallet Address -->
+  <button onclick="copyAddress()" class="mb-4 bg-gray-300 text-gray-700 px-4 py-1 rounded hover:bg-gray-400">
+    Copy Wallet Address
+  </button>
+
+  <!-- I Have Made Payment Button -->
+  <button onclick="verifyDeposit()" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">
+    I Have Made the Payment
+  </button>
+
+  <!-- Status Indicator -->
+  <p id="status" class="mt-4 text-sm text-gray-600"></p>
+</div>
+
+<script>
+function copyAddress() {
+  navigator.clipboard.writeText("{{ wallet_address }}").then(function() {
+    alert("Wallet address copied to clipboard!");
+  });
+}
+
+function verifyDeposit() {
+  document.getElementById("status").innerHTML = "🔄 Payment is being verified...";
+  fetch("{% url 'transactions:verify_deposit' %}")
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === "success") {
+        document.getElementById("status").innerHTML = "✅ Payment verified! Redirecting...";
+        setTimeout(() => {
+          window.location.href = "{% url 'home' %}";
+        }, 2000);
+      } else {
+        document.getElementById("status").innerHTML = "❌ Payment not received.";
+      }
+    }).catch(() => {
+      document.getElementById("status").innerHTML = "⚠️ Verification error. Try again.";
+    });
+}
+</script>
+{% endblock %}

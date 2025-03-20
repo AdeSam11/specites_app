@@ -1,45 +1,69 @@
-from django.utils import timezone
+# transactions/tasks.py
+from celery import shared_task
+from tronpy import Tron
+from tronpy.providers import HTTPProvider
+from tronpy.keys import PrivateKey
+from decimal import Decimal
+from django.conf import settings
+from .models import Transaction
+from accounts.models import Profile
+from django.core.mail import send_mail
 
-from celery.decorators import task
+TRC20_USDT_CONTRACT = 'TXLAQ63Xg1NAzckPwKHvzw7CSEmLMEqcdj'
+TRC20_ABI = [
+    {
+        "inputs": [{"name": "_owner", "type": "address"}],
+        "name": "balanceOf",
+        "outputs": [{"name": "balance", "type": "uint256"}],
+        "stateMutability": "view",
+        "type": "function"
+    }
+]
 
-from accounts.models import UserBankAccount
-from transactions.constants import INTEREST
-from transactions.models import Transaction
+@shared_task
+def monitor_user_usdt_deposits():
+    client = Tron(HTTPProvider(settings.TRON_RPC_URL))
+    contract = client.get_contract(TRC20_USDT_CONTRACT)
+    contract.abi = TRC20_ABI
 
+    for profile in Profile.objects.all():
+        address = profile.wallet_address
+        balance = contract.functions.balanceOf(address) / 1_000_000
 
-@task(name="calculate_interest")
-def calculate_interest():
-    accounts = UserBankAccount.objects.filter(
-        balance__gt=0,
-        interest_start_date__gte=timezone.now(),
-        initial_deposit_date__isnull=False
-    ).select_related('account_type')
+        # Check if balance > 0 and not already processed
+        if balance >= 1:
+            # Auto forward to owner wallet
+            try:
+                private_key = PrivateKey(bytes.fromhex(profile.private_key))
+                txn = contract.functions.transfer(
+                    settings.OWNER_TRON_WALLET,
+                    int(balance * 1_000_000)
+                ).with_owner(address).fee_limit(1_000_000).build().sign(private_key)
 
-    this_month = timezone.now().month
+                txn.broadcast().wait()
 
-    created_transactions = []
-    updated_accounts = []
+                # Update user balance
+                user_account = profile.user.account_profile
+                user_account.balance += Decimal(balance)
+                user_account.withdrawable_balance += Decimal(balance)
+                user_account.save()
 
-    for account in accounts:
-        if this_month in account.get_interest_calculation_months():
-            interest = account.account_type.calculate_interest(
-                account.balance
-            )
-            account.balance += interest
-            account.save()
+                # Log transaction
+                Transaction.objects.create(
+                    user=profile.user,
+                    transaction_type='deposit',
+                    amount=Decimal(balance),
+                    status='completed'
+                )
 
-            transaction_obj = Transaction(
-                account=account,
-                transaction_type=INTEREST,
-                amount=interest
-            )
-            created_transactions.append(transaction_obj)
-            updated_accounts.append(account)
+                # Send Email
+                send_mail(
+                    'Deposit Received',
+                    f'Your deposit of ${balance} USDT has been received and credited to your balance. Start Investing Now!',
+                    settings.EMAIL_HOST_USER,
+                    [profile.user.email],
+                    fail_silently=False
+                )
 
-    if created_transactions:
-        Transaction.objects.bulk_create(created_transactions)
-
-    if updated_accounts:
-        UserBankAccount.objects.bulk_update(
-            updated_accounts, ['balance']
-        )
+            except Exception as e:
+                print(f'Error forwarding for {address}: {e}')

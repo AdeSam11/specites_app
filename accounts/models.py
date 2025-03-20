@@ -46,6 +46,8 @@ class Profile(models.Model):
     
     balance = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     withdrawable_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    wallet_address = models.CharField(max_length=100, blank=True, null=True)
+    private_key = models.CharField(max_length=200, blank=True, null=True)
     ongoing_investment_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     total_invested = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     total_yielded = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)

@@ -34,12 +34,12 @@ ALLOWED_HOSTS = ["specites-web-app.onrender.com", "localhost", "127.0.0.1"]
 
 LOGIN_REDIRECT_URL = '/'
 
-CELERY_BROKER_URL = "redis://localhost:6379/0"  
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+
+CELERY_BROKER_URL = REDIS_URL
 CELERY_RESULT_BACKEND = 'django-db'
-CELERY_ACCEPT_CONTENT = ["json"]
-CELERY_TASK_SERIALIZER = "json"
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = 'UTC'
+
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers.DatabaseScheduler'
 
 
 # Application definition
@@ -158,9 +158,8 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 
-# NOWPayments Configuration
-PLISIO_API_KEY = os.getenv("PLISIO_API_KEY")
-PLISIO_CALLBACK_URL = "https://specites-web-app.onrender.com/transactions/webhook/"
+TRON_RPC_URL = os.getenv("TRON_RPC_URL")
+OWNER_TRON_WALLET = os.getenv("OWNER_TRON_WALLET")
 
 from django.contrib.messages import constants as messages
 
