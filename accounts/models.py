@@ -1,5 +1,7 @@
 import random
 import string
+from cryptography.fernet import Fernet
+from django.conf import settings
 from django_countries.fields import CountryField
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -47,13 +49,36 @@ class Profile(models.Model):
     balance = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     withdrawable_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     wallet_address = models.CharField(max_length=100, blank=True, null=True)
-    private_key = models.CharField(max_length=200, blank=True, null=True)
+    _private_key = models.CharField(max_length=500, blank=True, null=True, db_column='private_key')
     ongoing_investment_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     total_invested = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     total_yielded = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
 
     def __str__(self):
-        return f"{self.user.username} - ${self.withdrawable_balance}"
+        return f"{self.user.email} - ${self.withdrawable_balance}"
+    
+    @property
+    def private_key(self):
+        """Decrypt the private key when accessed."""
+        if self._private_key:
+            try:
+                fernet = Fernet(settings.FERNET_SECRET_KEY.encode())
+                decrypted = fernet.decrypt(self._private_key.encode())
+                return decrypted.decode()
+            except Exception as e:
+                print(f"[ERROR] Decryption failed: {e}")
+                return None
+        return None
+
+    @private_key.setter
+    def private_key(self, value):
+        """Encrypt the private key before storing."""
+        if value:
+            fernet = Fernet(settings.FERNET_SECRET_KEY.encode())
+            encrypted = fernet.encrypt(value.encode())
+            self._private_key = encrypted.decode()
+        else:
+            self._private_key = None
     
 class EmailVerificationOTP(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)

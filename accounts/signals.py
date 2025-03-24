@@ -6,6 +6,7 @@ from tronpy import Tron
 from tronpy.keys import PrivateKey
 from tronpy.providers import HTTPProvider
 from .models import Profile
+from cryptography.fernet import Fernet
 
 User = get_user_model()
 
@@ -16,8 +17,12 @@ def create_wallet_on_registration(sender, instance, created, **kwargs):
         key = PrivateKey.random()
         address = key.public_key.to_base58check_address()
 
+        # Encrypt the private key
+        fernet = Fernet(settings.FERNET_SECRET_KEY.encode())
+        encrypted_private_key = fernet.encrypt(key.hex().encode()).decode()
+
         Profile.objects.create(
             user=instance,
             wallet_address=address,
-            private_key=key.hex()
+            private_key=encrypted_private_key
         )

@@ -27,43 +27,50 @@ def monitor_user_usdt_deposits():
     contract.abi = TRC20_ABI
 
     for profile in Profile.objects.all():
-        address = profile.wallet_address
-        balance = contract.functions.balanceOf(address) / 1_000_000
+        try:
+            address = profile.wallet_address
+            private_key_hex = profile.private_key
+            owner_wallet = settings.OWNER_TRON_WALLET
+            
+            # Fetch balance
+            balance_raw = contract.functions.balanceOf(address).call()
+            balance = Decimal(balance_raw) / Decimal(1_000_000)
 
-        # Check if balance > 0 and not already processed
-        if balance >= 1:
-            # Auto forward to owner wallet
-            try:
-                private_key = PrivateKey(bytes.fromhex(profile.private_key))
-                txn = contract.functions.transfer(
-                    settings.OWNER_TRON_WALLET,
-                    int(balance * 1_000_000)
-                ).with_owner(address).fee_limit(1_000_000).build().sign(private_key)
+            if balance >= Decimal('1'):
+                    # Prepare transfer
+                    private_key = PrivateKey(bytes.fromhex(private_key_hex))
+                    amount_to_transfer = int((balance * Decimal(1_000_000)).to_integral_value())
 
-                txn.broadcast().wait()
+                    txn = contract.functions.transfer(
+                        owner_wallet,
+                        amount_to_transfer
+                    ).with_owner(address).fee_limit(1_000_000).build().sign(private_key)
 
-                # Update user balance
-                user_account = profile.user.account_profile
-                user_account.balance += Decimal(balance)
-                user_account.withdrawable_balance += Decimal(balance)
-                user_account.save()
+                    txn_hash = txn.txid
+                    txn.broadcast().wait()
 
-                # Log transaction
-                Transaction.objects.create(
-                    user=profile.user,
-                    transaction_type='deposit',
-                    amount=Decimal(balance),
-                    status='completed'
-                )
+                    # Update user balances
+                    user_account = profile.user.account_profile
+                    user_account.balance += balance
+                    user_account.withdrawable_balance += balance
+                    user_account.save()
 
-                # Send Email
-                send_mail(
-                    'Deposit Received',
-                    f'Your deposit of ${balance} USDT has been received and credited to your balance. Start Investing Now!',
-                    settings.EMAIL_HOST_USER,
-                    [profile.user.email],
-                    fail_silently=False
-                )
+                    # Log transaction
+                    Transaction.objects.create(
+                        user=profile.user,
+                        transaction_type='deposit',
+                        amount=balance,
+                        status='completed',
+                        reference=txn_hash  # Store txn hash
+                    )
 
-            except Exception as e:
-                print(f'Error forwarding for {address}: {e}')
+                    # Send confirmation email
+                    send_mail(
+                        'Deposit Received',
+                        f'Your deposit of ${balance} USDT has been received and credited to your balance. Start Investing Now!',
+                        settings.EMAIL_HOST_USER,
+                        [profile.user.email],
+                        fail_silently=False
+                    )
+        except Exception as e:
+            print(f'Error forwarding for {address}: {e}')

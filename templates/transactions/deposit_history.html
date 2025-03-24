@@ -7,7 +7,7 @@
             <tr class="bg-gray-800 text-white">
                 <th class="p-3 text-left">Date</th>
                 <th class="p-3 text-left">Amount</th>
-                <th class="p-3 text-left">Transaction ID</th>
+                <th class="p-3 text-left">Transaction Hash</th>
                 <th class="p-3 text-left">Status</th>
             </tr>
         </thead>
@@ -16,16 +16,8 @@
             <tr class="border-b border-gray-300">
                 <td class="p-3">{{ deposit.created_at|date:"Y-m-d H:i" }}</td>
                 <td class="p-3">${{ deposit.amount }}</td>
-                <td class="p-3">{{ deposit.transaction_id }}</td>
-                <td class="p-3">
-                    {% if deposit.payment_status == "confirmed" %}
-                        <span class="text-green-500 font-bold">{{ deposit.payment_status }}</span>
-                    {% elif deposit.payment_status == "pending" %}
-                        <span class="text-yellow-500 font-bold">{{ deposit.payment_status }}</span>
-                    {% else %}
-                        <span class="text-red-500 font-bold">{{ deposit.payment_status }}</span>
-                    {% endif %}
-                </td>
+                <td class="p-3">{{ deposit.reference }}</td>
+                <td class="p-3 text-green-500 font-bold">{{ deposit.status }}</td>
             </tr>
             {% empty %}
             <tr>

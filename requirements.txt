@@ -23,3 +23,4 @@ django-countries
 whitenoise
 web3
 tronpy
+cryptography

@@ -29,7 +29,11 @@ TRC20_ABI = [
 @login_required
 def deposit_money(request):
     if request.method == "POST":
-        amount = request.POST.get("amount")
+        try:
+            amount = Decimal(request.POST.get("amount", "0"))
+        except:
+            messages.error(request, "Invalid amount.")
+            return redirect("transactions:deposit_money")
         if not amount or float(amount) < 10:
             messages.error(request, "Minimum deposit is $10.")
             return redirect("transactions:deposit_money")
@@ -65,7 +69,7 @@ def verify_deposit(request):
         contract.abi = TRC20_ABI
 
         # Now safely call balanceOf
-        balance_raw = contract.functions.balanceOf(user_wallet)
+        balance_raw = contract.functions.balanceOf(user_wallet).call()
         balance = Decimal(balance_raw) / Decimal(1_000_000)
 
         if Decimal(balance) >= amount:

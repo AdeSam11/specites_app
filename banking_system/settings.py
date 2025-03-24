@@ -38,6 +38,8 @@ REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
 CELERY_BROKER_URL = REDIS_URL
 CELERY_RESULT_BACKEND = 'django-db'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
 
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers.DatabaseScheduler'
 
@@ -169,3 +171,4 @@ MESSAGE_TAGS = {
 }
 
 CSRF_TRUSTED_ORIGINS = ["https://specites-web-app.onrender.com"]
+FERNET_SECRET_KEY = os.getenv('FERNET_SECRET_KEY')
