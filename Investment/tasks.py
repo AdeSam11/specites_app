@@ -13,5 +13,7 @@ def update_daily_yield():
 
         if now().date() >= investment.matured_at.date():
             user_profile.total_yielded = investment.expected_return
+            user_profile.balance += investment.expected_return
+            user_profile.withdrawable_balance += investment.expected_return
             
         user_profile.save()
