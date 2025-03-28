@@ -81,6 +81,7 @@ def investment_history(request):
 def portfolio_view(request):
     # Fetch ongoing investments
     ongoing_investments = Investment.objects.filter(user=request.user, matured_at__gt=now())
+    completed_investments = Investment.objects.filter(user=request.user, matured_at__lte=now())
 
     # Calculate total ongoing investment and expected return
     total_invested = sum(inv.amount for inv in ongoing_investments)
@@ -90,5 +91,6 @@ def portfolio_view(request):
         "ongoing_investments": ongoing_investments,
         "total_invested": total_invested,
         "expected_total": expected_total,
+        "completed_investments": completed_investments,
     }
     return render(request, "Investment/portfolio.html", context)

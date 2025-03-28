@@ -1,6 +1,7 @@
 from tronpy import Tron
 from tronpy.contract import Contract
 from tronpy.providers import HTTPProvider
+from tronpy.keys import PrivateKey
 from decimal import Decimal
 from django.conf import settings
 from django.shortcuts import render, redirect
@@ -25,6 +26,9 @@ TRC20_ABI = [
         "type": "function"
     }
 ]
+
+MAIN_WALLET = settings.OWNER_TRON_WALLET
+MAIN_WALLET_PRIVATE_KEY = settings.OWNER_PRIV_KEY
 
 @login_required
 def deposit_money(request):
@@ -60,7 +64,18 @@ def deposit_invoice(request):
 def verify_deposit(request):
     amount = Decimal(request.session.get('deposit_amount', 0))
     profile = request.user.account_profile
-    user_wallet = profile.wallet_address
+    user_address = profile.wallet_address
+
+    def activate_wallet(user_wallet):
+        txn = (
+            client.trx.transfer(MAIN_WALLET, user_wallet, 1_000_000)  # 1 TRX = 1,000,000 SUN
+            .build()
+            .sign(PrivateKey(bytes.fromhex(MAIN_WALLET_PRIVATE_KEY)))
+        )
+        response = txn.broadcast().wait()
+        return response
+            
+    activate_wallet(user_address)
 
     client = Tron(HTTPProvider(settings.TRON_RPC_URL))
 
@@ -69,7 +84,7 @@ def verify_deposit(request):
         contract.abi = TRC20_ABI
 
         # Now safely call balanceOf
-        balance_raw = contract.functions.balanceOf(user_wallet).call()
+        balance_raw = contract.functions.balanceOf(user_address).call()
         balance = Decimal(balance_raw) / Decimal(1_000_000)
 
         if Decimal(balance) >= amount:

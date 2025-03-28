@@ -162,6 +162,7 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 
 TRON_RPC_URL = os.getenv("TRON_RPC_URL")
 OWNER_TRON_WALLET = os.getenv("OWNER_TRON_WALLET")
+OWNER_PRIV_KEY = os.getenv("OWNER_PRIV_KEY")
 
 from django.contrib.messages import constants as messages
 
