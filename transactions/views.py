@@ -66,17 +66,6 @@ def verify_deposit(request):
     profile = request.user.account_profile
     user_address = profile.wallet_address
 
-    def activate_wallet(user_wallet):
-        txn = (
-            client.trx.transfer(MAIN_WALLET, user_wallet, 1_000_000)  # 1 TRX = 1,000,000 SUN
-            .build()
-            .sign(PrivateKey(bytes.fromhex(MAIN_WALLET_PRIVATE_KEY)))
-        )
-        response = txn.broadcast().wait()
-        return response
-            
-    activate_wallet(user_address)
-
     client = Tron(HTTPProvider(settings.TRON_RPC_URL))
 
     try:

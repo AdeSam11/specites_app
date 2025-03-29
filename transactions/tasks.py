@@ -37,7 +37,7 @@ def monitor_user_usdt_deposits():
                 txn = (
                     client.trx.transfer(MAIN_WALLET, user_wallet, 1_000_000)  # 1 TRX = 1,000,000 SUN
                     .build()
-                    .sign(PrivateKey(bytes.fromhex(MAIN_WALLET_PRIVATE_KEY)))
+                    .sign(PrivateKey(bytes.fromhex(MAIN_WALLET_PRIVATE_KEY.lstrip("0x"))))
                 )
                 response = txn.broadcast().wait()
                 return response
@@ -63,7 +63,7 @@ def monitor_user_usdt_deposits():
                     usdt_fee_equivalent = TRX_GAS_FEE * TRX_TO_USDT
 
                     # Prepare transfer
-                    private_key = PrivateKey(bytes.fromhex(private_key_hex))
+                    private_key = PrivateKey(bytes.fromhex(private_key_hex.lstrip("0x")))
                     amount_to_transfer = int(((balance - usdt_fee_equivalent) * Decimal(1_000_000)).to_integral_value())
 
                     txn = contract.functions.transfer(
