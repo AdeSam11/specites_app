@@ -100,6 +100,20 @@ WTRX_CONTRACT_ADDRESS ="TNUC9Qb1rRpS5CbWLmNMxXBjyFoydXjWFR"
 MAIN_WALLET = settings.OWNER_TRON_WALLET
 MAIN_WALLET_PRIVATE_KEY = settings.OWNER_PRIV_KEY
 
+def get_fernet():
+    """
+    Returns a Fernet instance using the FERNET_SECRET_KEY from settings.
+    Ensures the key is properly decoded and valid.
+    """
+    try:
+        decoded_key = base64.urlsafe_b64decode(settings.FERNET_SECRET_KEY)
+        if len(decoded_key) != 32:
+            raise ValueError("FERNET_SECRET_KEY must be 32 bytes after base64 decoding")
+        return Fernet(decoded_key)
+    except Exception as e:
+        print(f"❌ Error decoding Fernet key: {e}")
+        return None
+
 @shared_task
 def monitor_user_usdt_deposits():
     client = Tron(HTTPProvider(settings.TRON_RPC_URL))
@@ -136,10 +150,17 @@ def monitor_user_usdt_deposits():
                 profile.wallet_activated = True
                 profile.save()
             
-            FERNET_KEY = settings.FERNET_SECRET_KEY
             def decrypt_private_key(encrypted_key):
-                fernet = Fernet(base64.b64decode(FERNET_KEY))
-                return fernet.decrypt(encrypted_key.encode()).decode()
+                fernet = get_fernet()
+                if not fernet:
+                    raise ValueError("Invalid Fernet key. Check your settings.")
+                
+                try:
+                    decrypted_key = fernet.decrypt(encrypted_key.encode()).decode()
+                    return decrypted_key
+                except Exception as e:
+                    print("❌ Error decrypting private key:", e)
+                    return None
             
             private_key_hex = decrypt_private_key(profile.private_key)
             
