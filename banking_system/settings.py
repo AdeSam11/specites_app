@@ -172,4 +172,4 @@ MESSAGE_TAGS = {
 }
 
 CSRF_TRUSTED_ORIGINS = ["https://specites-web-app.onrender.com"]
-FERNET_SECRET_KEY = os.getenv('FERNET_SECRET_KEY')
+FERNET_SECRET_KEY = os.getenv('FERNET_SECRET_KEY', "QoT-LThy6ryQYp6c8DjNI1fAuj5-kZfqHw-ZHi86U-U=")
