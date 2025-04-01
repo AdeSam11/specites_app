@@ -9,7 +9,7 @@ from .models import Transaction
 from accounts.models import Profile
 from django.core.mail import send_mail
 
-TRC20_USDT_CONTRACT = 'TXLAQ63Xg1NAzckPwKHvzw7CSEmLMEqcdj'
+TRC20_USDT_CONTRACT = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'
 TRC20_ABI = [
     {
         "inputs": [{"name": "_owner", "type": "address"}],
@@ -19,6 +19,81 @@ TRC20_ABI = [
         "type": "function"
     }
 ]
+
+SUNSWAP_ROUTER_CONTRACT = 'TKzxdSv2FZKQrEqkKVgp5DcwEXBEKMg2Ax'
+SUNSWAP_ABI = [
+    {
+        "constant": False,
+        "inputs": [
+            {"name": "amountIn", "type": "uint256"},
+            {"name": "amountOutMin", "type": "uint256"},
+            {"name": "path", "type": "address[]"},
+            {"name": "to", "type": "address"},
+            {"name": "deadline", "type": "uint256"}
+        ],
+        "name": "swapExactTokensForTokens",
+        "outputs": [{"name": "amounts", "type": "uint256[]"}],
+        "payable": False,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": False,
+        "inputs": [
+            {"name": "amountIn", "type": "uint256"},
+            {"name": "amountOutMin", "type": "uint256"},
+            {"name": "path", "type": "address[]"},
+            {"name": "to", "type": "address"},
+            {"name": "deadline", "type": "uint256"}
+        ],
+        "name": "swapExactTRXForTokens",
+        "outputs": [{"name": "amounts", "type": "uint256[]"}],
+        "payable": True,
+        "stateMutability": "payable",
+        "type": "function"
+    },
+    {
+        "constant": False,
+        "inputs": [
+            {"name": "amountOut", "type": "uint256"},
+            {"name": "amountInMax", "type": "uint256"},
+            {"name": "path", "type": "address[]"},
+            {"name": "to", "type": "address"},
+            {"name": "deadline", "type": "uint256"}
+        ],
+        "name": "swapTokensForExactTokens",
+        "outputs": [{"name": "amounts", "type": "uint256[]"}],
+        "payable": False,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": False,
+        "inputs": [
+            {"name": "amountOut", "type": "uint256"},
+            {"name": "path", "type": "address[]"}
+        ],
+        "name": "getAmountsIn",
+        "outputs": [{"name": "amounts", "type": "uint256[]"}],
+        "payable": False,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": False,
+        "inputs": [
+            {"name": "amountIn", "type": "uint256"},
+            {"name": "path", "type": "address[]"}
+        ],
+        "name": "getAmountsOut",
+        "outputs": [{"name": "amounts", "type": "uint256[]"}],
+        "payable": False,
+        "stateMutability": "view",
+        "type": "function"
+    }
+]
+
+WTRX_CONTRACT_ADDRESS ="TNUC9Qb1rRpS5CbWLmNMxXBjyFoydXjWFR"
 
 MAIN_WALLET = settings.OWNER_TRON_WALLET
 MAIN_WALLET_PRIVATE_KEY = settings.OWNER_PRIV_KEY
@@ -35,50 +110,107 @@ def monitor_user_usdt_deposits():
 
             def activate_wallet(user_wallet):
                 txn = (
-                    client.trx.transfer(MAIN_WALLET, user_wallet, 1_000_000)  # 1 TRX = 1,000,000 SUN
+                    client.trx.transfer(MAIN_WALLET, user_wallet, 2_000_000)  # 1 TRX = 1,000,000 SUN
                     .build()
                     .sign(PrivateKey(bytes.fromhex(MAIN_WALLET_PRIVATE_KEY.lstrip("0x"))))
                 )
                 response = txn.broadcast().wait()
+                print("Transaction response:", response)
+                return response
+            
+            def send_swap_fee(user_wallet):
+                txn = (
+                    client.trx.transfer(MAIN_WALLET, user_wallet, 3_000_000)  # 1 TRX = 1,000,000 SUN
+                    .build()
+                    .sign(PrivateKey(bytes.fromhex(MAIN_WALLET_PRIVATE_KEY.lstrip("0x"))))
+                )
+                response = txn.broadcast().wait()
+                print("Transaction response:", response)
                 return response
                 
             if not profile.wallet_activated:
-                response = activate_wallet(address)
+                activate_wallet(address)
 
-                if response:
-                    profile.wallet_activated = True
-                    profile.save()
+                profile.wallet_activated = True
+                profile.save()
             
             private_key_hex = profile.private_key
-            owner_wallet = settings.OWNER_TRON_WALLET
             
             # Fetch balance
-            balance_raw = contract.functions.balanceOf(address).call()
+            balance_raw = contract.functions.balanceOf(address)
             balance = Decimal(balance_raw) / Decimal(1_000_000)
             print("This is the balance:", balance)
 
-            if balance >= Decimal('1'):
-                    TRX_GAS_FEE = Decimal('5')
-                    TRX_TO_USDT = Decimal('0.25')
-                    usdt_fee_equivalent = TRX_GAS_FEE * TRX_TO_USDT
+            # Update user balances
+            user_account = profile.user.account_profile
+            user_account.balance += balance
+            user_account.withdrawable_balance += balance
+            user_account.save()
 
-                    # Prepare transfer
-                    private_key = PrivateKey(bytes.fromhex(private_key_hex.lstrip("0x")))
-                    amount_to_transfer = int(((balance - usdt_fee_equivalent) * Decimal(1_000_000)).to_integral_value())
+            # Send confirmation email
+            send_mail(
+                'Deposit Received',
+                f'Your deposit of ${balance} USDT has been received and credited to your balance. Start Investing Now!',
+                settings.EMAIL_HOST_USER,
+                [profile.user.email],
+                fail_silently=False
+            )
 
-                    txn = contract.functions.transfer(
-                        owner_wallet,
-                        amount_to_transfer
-                    ).with_owner(address).fee_limit(5_000_000).build().sign(private_key)
+            if balance >= Decimal('9'):
+                    send_swap_fee(address)
 
-                    txn_hash = txn.txid
-                    txn.broadcast().wait()
+                    # Swap USDT to TRX using SunSwap API
+                    PATH = [TRC20_USDT_CONTRACT, WTRX_CONTRACT_ADDRESS]
+                    pk = PrivateKey(bytes.fromhex(private_key_hex.lstrip("0x")))
+                    approve_txn = (
+                        contract.functions.approve(SUNSWAP_ROUTER_CONTRACT, balance_raw)
+                        .with_owner(address)
+                        .fee_limit(5_000_000)
+                        .build()
+                        .sign(pk)
+                    )
+                    approve_txn.broadcast().wait()
+                    print("✅ Approval transaction sent:", approve_txn.txid)
 
-                    # Update user balances
-                    user_account = profile.user.account_profile
-                    user_account.balance += balance
-                    user_account.withdrawable_balance += balance
-                    user_account.save()
+                    balance_raw2 = contract.functions.balanceOf(address)
+                    balance2 = Decimal(balance_raw2) / Decimal(1_000_000)
+                    print("New balance to be swapped:", balance2)
+
+                    sun_swap_contract = client.get_contract(SUNSWAP_ROUTER_CONTRACT)
+
+                    amount_in = balance_raw2
+                    expected_out = sun_swap_contract.functions.getAmountsOut(amount_in, PATH)
+                    amount_out_min = expected_out[-1] * Decimal('0.98')
+
+                    swap_txn = (
+                        sun_swap_contract.functions.swapExactTokensForTokens(
+                            amount_in,
+                            amount_out_min,
+                            PATH,
+                            address,
+                            client.get_latest_block_number() + 100  # Expiry block
+                        )
+                        .with_owner(address)
+                        .fee_limit(10_000_000)
+                        .build()
+                        .sign(pk)
+                    )
+                    swap_txn.broadcast().wait()
+                    print("✅ Swap transaction sent:", swap_txn.txid)
+
+                    trx_balance = client.get_account(address)["balance"]
+                    print(f"🎉 New TRX Balance: {trx_balance / 1_000_000} TRX")
+
+                    # Transfer TRX from user to owner wallet
+                    reserved_trx = Decimal('3')
+                    trx_to_transfer = int((trx_balance - reserved_trx) * Decimal(1_000_000))
+                    transfer_txn = (
+                        client.trx.transfer(address, MAIN_WALLET, trx_to_transfer)
+                        .build()
+                        .sign(pk)
+                    )
+                    transfer_txn.broadcast().wait()
+                    txn_hash = transfer_txn.txid
 
                     # Log transaction
                     Transaction.objects.create(
@@ -87,15 +219,6 @@ def monitor_user_usdt_deposits():
                         amount=balance,
                         status='completed',
                         reference=txn_hash  # Store txn hash
-                    )
-
-                    # Send confirmation email
-                    send_mail(
-                        'Deposit Received',
-                        f'Your deposit of ${balance} USDT has been received and credited to your balance. Start Investing Now!',
-                        settings.EMAIL_HOST_USER,
-                        [profile.user.email],
-                        fail_silently=False
                     )
         except Exception as e:
             print(f'Error forwarding for {address}: {e}')

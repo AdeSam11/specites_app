@@ -16,7 +16,7 @@ from .models import Withdrawal, Transaction, UserProfile
 
 from django.contrib.auth import get_user_model
 
-TRC20_USDT_CONTRACT = 'TXLAQ63Xg1NAzckPwKHvzw7CSEmLMEqcdj'
+TRC20_USDT_CONTRACT = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'
 TRC20_ABI = [
     {
         "inputs": [{"name": "_owner", "type": "address"}],
@@ -73,7 +73,7 @@ def verify_deposit(request):
         contract.abi = TRC20_ABI
 
         # Now safely call balanceOf
-        balance_raw = contract.functions.balanceOf(user_address).call()
+        balance_raw = contract.functions.balanceOf(user_address)
         balance = Decimal(balance_raw) / Decimal(1_000_000)
 
         if Decimal(balance) >= amount:
