@@ -8,8 +8,36 @@ from django.conf import settings
 from .models import Transaction
 from accounts.models import Profile
 from django.core.mail import send_mail
-from cryptography.fernet import Fernet
+
+from Crypto.Cipher import AES
 import base64
+import os
+
+BLOCK_SIZE = 16  # AES block size
+
+def pad(data):
+    """Pad data to be a multiple of BLOCK_SIZE"""
+    padding_length = BLOCK_SIZE - len(data) % BLOCK_SIZE
+    return data + (chr(padding_length) * padding_length).encode()
+
+def unpad(data):
+    """Remove padding"""
+    return data[:-ord(data[-1:])]
+
+def encrypt_private_key(private_key: str) -> str:
+    """Encrypt a private key using AES"""
+    cipher = AES.new(settings.AES_SECRET_KEY, AES.MODE_CBC, os.urandom(16))
+    encrypted_data = cipher.encrypt(pad(private_key.encode()))
+    return base64.b64encode(cipher.iv + encrypted_data).decode()
+
+def decrypt_private_key(encrypted_private_key: str) -> str:
+    """Decrypt a private key using AES"""
+    raw_data = base64.b64decode(encrypted_private_key)
+    iv = raw_data[:16]  # Extract IV
+    encrypted_data = raw_data[16:]  # Extract encrypted part
+    cipher = AES.new(settings.AES_SECRET_KEY, AES.MODE_CBC, iv)
+    return unpad(cipher.decrypt(encrypted_data)).decode()
+
 
 TRC20_USDT_CONTRACT = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'
 TRC20_ABI = [
@@ -100,22 +128,6 @@ WTRX_CONTRACT_ADDRESS ="TNUC9Qb1rRpS5CbWLmNMxXBjyFoydXjWFR"
 MAIN_WALLET = settings.OWNER_TRON_WALLET
 MAIN_WALLET_PRIVATE_KEY = settings.OWNER_PRIV_KEY
 
-def get_fernet():
-    """
-    Returns a Fernet instance using the FERNET_SECRET_KEY from settings.
-    Ensures the key is properly decoded and valid.
-    """
-    try:
-        print(f"🔍 FERNET_SECRET_KEY: {settings.FERNET_SECRET_KEY}")
-        decoded_key = base64.urlsafe_b64decode(settings.FERNET_SECRET_KEY)
-        print(f"✅ Decoded Key Length: {len(decoded_key)} bytes")
-        if len(decoded_key) != 32:
-            raise ValueError("FERNET_SECRET_KEY must be 32 bytes after base64 decoding")
-        return Fernet(decoded_key)
-    except Exception as e:
-        print(f"❌ Error decoding Fernet key: {e}")
-        return None
-
 @shared_task
 def monitor_user_usdt_deposits():
     client = Tron(HTTPProvider(settings.TRON_RPC_URL))
@@ -152,18 +164,6 @@ def monitor_user_usdt_deposits():
                 profile.wallet_activated = True
                 profile.save()
             
-            def decrypt_private_key(encrypted_key):
-                fernet = get_fernet()
-                if not fernet:
-                    raise ValueError("Invalid Fernet key. Check your settings.")
-                
-                try:
-                    decrypted_key = fernet.decrypt(encrypted_key.encode()).decode()
-                    return decrypted_key
-                except Exception as e:
-                    print("❌ Error decrypting private key:", e)
-                    return None
-            
             private_key_hex = decrypt_private_key(profile.private_key)
             
             # Fetch balance
@@ -171,23 +171,23 @@ def monitor_user_usdt_deposits():
             balance = Decimal(balance_raw) / Decimal(1_000_000)
             print("This is the balance:", balance)
 
-            # Update user balances
-            user_account = profile.user.account_profile
-            user_account.balance += balance
-            user_account.withdrawable_balance += balance
-            user_account.save()
-
-            # Send confirmation email
-            send_mail(
-                'Deposit Received',
-                f'Your deposit of ${balance} USDT has been received and credited to your balance. Start Investing Now!',
-                settings.EMAIL_HOST_USER,
-                [profile.user.email],
-                fail_silently=False
-            )
-
             if balance >= Decimal('9'):
                     # send_swap_fee(address)
+
+                    # Update user balances
+                    user_account = profile.user.account_profile
+                    user_account.balance += balance
+                    user_account.withdrawable_balance += balance
+                    user_account.save()
+
+                    # Send confirmation email
+                    send_mail(
+                        'Deposit Received',
+                        f'Your deposit of ${balance} USDT has been received and credited to your balance. Start Investing Now!',
+                        settings.EMAIL_HOST_USER,
+                        [profile.user.email],
+                        fail_silently=False
+                    )
 
                     # Swap USDT to TRX using SunSwap API
                     PATH = [TRC20_USDT_CONTRACT, WTRX_CONTRACT_ADDRESS]
