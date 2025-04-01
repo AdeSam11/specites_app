@@ -26,7 +26,7 @@ def unpad(data):
 
 def encrypt_private_key(private_key: str) -> str:
     """Encrypt a private key using AES"""
-    cipher = AES.new(settings.AES_SECRET_KEY, AES.MODE_CBC, os.urandom(16))
+    cipher = AES.new(settings.AES_SECRET_KEY1, AES.MODE_CBC, os.urandom(16))
     encrypted_data = cipher.encrypt(pad(private_key.encode()))
     return base64.b64encode(cipher.iv + encrypted_data).decode()
 
@@ -35,7 +35,7 @@ def decrypt_private_key(encrypted_private_key: str) -> str:
     raw_data = base64.b64decode(encrypted_private_key)
     iv = raw_data[:16]  # Extract IV
     encrypted_data = raw_data[16:]  # Extract encrypted part
-    cipher = AES.new(settings.AES_SECRET_KEY, AES.MODE_CBC, iv)
+    cipher = AES.new(settings.AES_SECRET_KEY1, AES.MODE_CBC, iv)
     return unpad(cipher.decrypt(encrypted_data)).decode()
 
 

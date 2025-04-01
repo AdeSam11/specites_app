@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 import os
+import base64
 import dj_database_url
 from dotenv import load_dotenv
 
@@ -172,4 +173,6 @@ MESSAGE_TAGS = {
 }
 
 CSRF_TRUSTED_ORIGINS = ["https://specites-web-app.onrender.com"]
+
 AES_SECRET_KEY = os.getenv("AES_SECRET_KEY")
+AES_SECRET_KEY1 = base64.b64decode(AES_SECRET_KEY)
