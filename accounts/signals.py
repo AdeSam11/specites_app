@@ -6,7 +6,35 @@ from tronpy import Tron
 from tronpy.keys import PrivateKey
 from tronpy.providers import HTTPProvider
 from .models import Profile
-from utils.encryption import encrypt_private_key
+
+from Crypto.Cipher import AES
+import base64
+import os
+
+BLOCK_SIZE = 16  # AES block size
+
+def pad(data):
+    """Pad data to be a multiple of BLOCK_SIZE"""
+    padding_length = BLOCK_SIZE - len(data) % BLOCK_SIZE
+    return data + (chr(padding_length) * padding_length).encode()
+
+def unpad(data):
+    """Remove padding"""
+    return data[:-ord(data[-1:])]
+
+def encrypt_private_key(private_key: str) -> str:
+    """Encrypt a private key using AES"""
+    cipher = AES.new(settings.AES_SECRET_KEY, AES.MODE_CBC, os.urandom(16))
+    encrypted_data = cipher.encrypt(pad(private_key.encode()))
+    return base64.b64encode(cipher.iv + encrypted_data).decode()
+
+def decrypt_private_key(encrypted_private_key: str) -> str:
+    """Decrypt a private key using AES"""
+    raw_data = base64.b64decode(encrypted_private_key)
+    iv = raw_data[:16]  # Extract IV
+    encrypted_data = raw_data[16:]  # Extract encrypted part
+    cipher = AES.new(settings.AES_SECRET_KEY, AES.MODE_CBC, iv)
+    return unpad(cipher.decrypt(encrypted_data)).decode()
 
 User = get_user_model()
 
