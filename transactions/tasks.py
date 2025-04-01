@@ -8,6 +8,8 @@ from django.conf import settings
 from .models import Transaction
 from accounts.models import Profile
 from django.core.mail import send_mail
+from cryptography.fernet import Fernet
+import base64
 
 TRC20_USDT_CONTRACT = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'
 TRC20_ABI = [
@@ -134,7 +136,12 @@ def monitor_user_usdt_deposits():
                 profile.wallet_activated = True
                 profile.save()
             
-            private_key_hex = profile.private_key
+            FERNET_KEY = settings.FERNET_SECRET_KEY
+            def decrypt_private_key(encrypted_key):
+                fernet = Fernet(base64.b64decode(FERNET_KEY))
+                return fernet.decrypt(encrypted_key.encode()).decode()
+            
+            private_key_hex = decrypt_private_key(profile.private_key)
             
             # Fetch balance
             balance_raw = contract.functions.balanceOf(address)
