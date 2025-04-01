@@ -58,29 +58,6 @@ class Profile(models.Model):
     def __str__(self):
         return f"{self.user.email} - ${self.withdrawable_balance}"
     
-    @property
-    def private_key(self):
-        """Decrypt the private key when accessed."""
-        if self._private_key:
-            try:
-                fernet = Fernet(settings.FERNET_SECRET_KEY.encode())
-                decrypted = fernet.decrypt(self._private_key.encode())
-                return decrypted.decode()
-            except Exception as e:
-                print(f"[ERROR] Decryption failed: {e}")
-                return None
-        return None
-
-    @private_key.setter
-    def private_key(self, value):
-        """Encrypt the private key before storing."""
-        if value:
-            fernet = Fernet(settings.FERNET_SECRET_KEY.encode())
-            encrypted = fernet.encrypt(value.encode())
-            self._private_key = encrypted.decode()
-        else:
-            self._private_key = None
-    
 class EmailVerificationOTP(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     otp = models.CharField(max_length=6)
