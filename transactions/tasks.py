@@ -106,6 +106,7 @@ def get_fernet():
     Ensures the key is properly decoded and valid.
     """
     try:
+        print(f"🔍 FERNET_SECRET_KEY: {settings.FERNET_SECRET_KEY}")
         decoded_key = base64.urlsafe_b64decode(settings.FERNET_SECRET_KEY)
         if len(decoded_key) != 32:
             raise ValueError("FERNET_SECRET_KEY must be 32 bytes after base64 decoding")
