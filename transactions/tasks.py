@@ -157,7 +157,7 @@ def monitor_user_usdt_deposits():
             )
 
             if balance >= Decimal('9'):
-                    send_swap_fee(address)
+                    # send_swap_fee(address)
 
                     # Swap USDT to TRX using SunSwap API
                     PATH = [TRC20_USDT_CONTRACT, WTRX_CONTRACT_ADDRESS]
