@@ -169,10 +169,15 @@ def monitor_user_usdt_deposits():
             # Fetch balance
             balance_raw = contract.functions.balanceOf(address)
             balance = Decimal(balance_raw) / Decimal(1_000_000)
-            print("This is the balance:", balance)
+            print("This is the USDT balance:", balance)
 
             if balance >= Decimal('9'):
-                    # send_swap_fee(address)
+                    trx_bal = client.get_account(address)["balance"]
+                    trx_balance = trx_bal / 1_000_000
+                    print("This is the TRX balance: ", trx_balance)
+
+                    if trx_balance <= 2:
+                        send_swap_fee(address)
 
                     # Update user balances
                     user_account = profile.user.account_profile
@@ -218,7 +223,7 @@ def monitor_user_usdt_deposits():
                             amount_out_min,
                             PATH,
                             address,
-                            client.get_latest_block_number() + 100  # Expiry block
+                            client.get_latest_block_number() + 500  # Expiry block
                         )
                         .with_owner(address)
                         .fee_limit(10_000_000)
