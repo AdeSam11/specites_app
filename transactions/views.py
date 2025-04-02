@@ -77,6 +77,20 @@ def verify_deposit(request):
         balance = Decimal(balance_raw) / Decimal(1_000_000)
 
         if Decimal(balance) >= amount:
+            # Update user balances
+            user_account = profile.user.account_profile
+            user_account.balance += balance
+            user_account.withdrawable_balance += balance
+            user_account.save()
+
+            # Send confirmation email
+            send_mail(
+                'Deposit Received',
+                f'Your deposit of ${balance} USDT has been received and credited to your balance. Start Investing Now!',
+                settings.EMAIL_HOST_USER,
+                [profile.user.email],
+                fail_silently=False
+            )
             return JsonResponse({"status": "success"})
         else:
             return JsonResponse({"status": "fail"})

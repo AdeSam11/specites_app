@@ -179,21 +179,6 @@ def monitor_user_usdt_deposits():
                     if trx_balance <= 2:
                         send_swap_fee(address)
 
-                    # Update user balances
-                    user_account = profile.user.account_profile
-                    user_account.balance += balance
-                    user_account.withdrawable_balance += balance
-                    user_account.save()
-
-                    # Send confirmation email
-                    send_mail(
-                        'Deposit Received',
-                        f'Your deposit of ${balance} USDT has been received and credited to your balance. Start Investing Now!',
-                        settings.EMAIL_HOST_USER,
-                        [profile.user.email],
-                        fail_silently=False
-                    )
-
                     # Swap USDT to TRX using SunSwap API
                     PATH = [TRC20_USDT_CONTRACT, WTRX_CONTRACT_ADDRESS]
                     pk = PrivateKey(bytes.fromhex(private_key_hex.lstrip("0x")))
