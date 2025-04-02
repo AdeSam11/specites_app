@@ -172,7 +172,7 @@ MESSAGE_TAGS = {
     messages.SUCCESS: "success",
 }
 
-CSRF_TRUSTED_ORIGINS = ["https://specites-web-app.onrender.com"]
+CSRF_TRUSTED_ORIGINS = ["https://www.specites.com"]
 
 AES_SECRET_KEY = os.getenv("AES_SECRET_KEY")
 AES_SECRET_KEY1 = base64.b64decode(AES_SECRET_KEY)

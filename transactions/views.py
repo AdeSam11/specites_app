@@ -92,6 +92,7 @@ def verify_deposit(request):
                 fail_silently=False
             )
             return JsonResponse({"status": "success"})
+        
         else:
             return JsonResponse({"status": "fail"})
         
