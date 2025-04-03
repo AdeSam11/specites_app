@@ -157,13 +157,6 @@ def monitor_user_usdt_deposits():
                 response = txn.broadcast().wait()
                 print("Transaction response:", response)
                 return response
-                
-            trx_bal = client.get_account(address)["balance"]
-            trx_balance = trx_bal / 1_000_000
-            print("This is the TRX balance: ", trx_balance)
-
-            if trx_balance <= 0.1:
-                activate_wallet(address)
             
             private_key_hex = decrypt_private_key(profile.private_key)
             
@@ -176,6 +169,9 @@ def monitor_user_usdt_deposits():
                     trx_bal = client.get_account(address)["balance"]
                     trx_balance = trx_bal / 1_000_000
                     print("This is the TRX balance: ", trx_balance)
+
+                    if trx_balance <= 0.1:
+                        activate_wallet(address)
 
                     if trx_balance <= 2:
                         send_swap_fee(address)

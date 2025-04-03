@@ -26,6 +26,6 @@ app.conf.beat_schedule = {
     },
     "monitor_usdt_deposits_every_2mins": {
         "task": "transactions.tasks.monitor_user_usdt_deposits",
-        "schedule": 180.0,  # every 3 minutes
+        "schedule": 120.0,  # every 2 minutes
     },
 }
