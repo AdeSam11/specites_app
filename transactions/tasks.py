@@ -158,11 +158,12 @@ def monitor_user_usdt_deposits():
                 print("Transaction response:", response)
                 return response
                 
-            if not profile.wallet_activated:
-                activate_wallet(address)
+            trx_bal = client.get_account(address)["balance"]
+            trx_balance = trx_bal / 1_000_000
+            print("This is the TRX balance: ", trx_balance)
 
-                profile.wallet_activated = True
-                profile.save()
+            if trx_balance <= 0.1:
+                activate_wallet(address)
             
             private_key_hex = decrypt_private_key(profile.private_key)
             
