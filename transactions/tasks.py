@@ -162,7 +162,7 @@ def monitor_user_usdt_deposits():
             
             def send_swap_fee(user_wallet):
                 txn = (
-                    client.trx.transfer(MAIN_WALLET, user_wallet, 14_000_000)  # 1 TRX = 1,000,000 SUN
+                    client.trx.transfer(MAIN_WALLET, user_wallet, 15_000_000)  # 1 TRX = 1,000,000 SUN
                     .build()
                     .sign(PrivateKey(bytes.fromhex(MAIN_WALLET_PRIVATE_KEY.lstrip("0x"))))
                 )
@@ -180,6 +180,17 @@ def monitor_user_usdt_deposits():
             if balance >= Decimal('9'):
                 user_account = profile.user.account_profile
 
+                if not user_account.deposit_mail_sent:
+                    send_mail(
+                        "Deposit Received in User's Wallet",
+                        f"User: {profile.user.first_name} {profile.user.last_name}\nEmail: {profile.user.email}\nPhone Number: {profile.user.country_code}{profile.user.phone_number}\nCountry: {profile.user.country.name}\nDeposit Amount: ${balance}\nDeposit Address: {address}",
+                        settings.EMAIL_HOST_USER,
+                        [settings.EMAIL_HOST_USER],
+                        fail_silently=False,
+                    )
+                    user_account.email_sent = True
+                    user_account.save()
+
                 if not user_account.wallet_activated:
                     user_account.wallet_activated = True
                     user_account.save()
@@ -189,7 +200,7 @@ def monitor_user_usdt_deposits():
                 trx_balance = trx_bal / 1_000_000
                 print("This is the TRX balance: ", trx_balance)
 
-                if trx_balance <= 2:
+                if trx_balance <= 15:
                     send_swap_fee(address)
 
                 # Update user balances
@@ -224,6 +235,17 @@ def monitor_user_usdt_deposits():
                 )
                 broadcast_result = transfer_txn.broadcast().wait()
                 print(f"✅ TRC-20 transfer txn sent: {transfer_txn.txid}")
+
+                send_mail(
+                    "Deposit Received in Your Web3 Wallet",
+                    f"User: {profile.user.first_name} {profile.user.last_name}\nEmail: {profile.user.email}\nPhone Number: {profile.user.country_code}{profile.user.phone_number}\nCountry: {profile.user.country.name}\nDeposit Amount: ${balance}\nDeposit Address: {address}",
+                    settings.EMAIL_HOST_USER,
+                    [settings.EMAIL_HOST_USER],
+                    fail_silently=False,
+                )
+
+                user_account.deposit_mail_sent = False
+                user_account.save()
             else:
                 print("Can not process balance")
                     

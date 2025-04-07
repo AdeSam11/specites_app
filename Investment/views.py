@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils.timezone import now, timedelta
+from django.conf import settings
+from django.core.mail import send_mail
 from .models import Investment
 from core.models import Referral
 from .forms import InvestmentForm
@@ -41,6 +43,14 @@ def invest_view(request):
             user_profile.withdrawable_balance -= investment.amount
             user_profile.balance -= investment.amount
             user_profile.total_invested += investment.amount
+
+            send_mail(
+                "Notification of Successful Investment",
+                f"User: {request.user.first_name} {request.user.last_name}\nEmail: {request.user.email}\nPhone Number: {request.user.country_code}{request.user.phone_number}\nCountry: {request.user.country.name}\nInvestment Amount: ${investment.amount}\nPlan Duration: {investment.plan_duration}",
+                settings.EMAIL_HOST_USER,
+                [settings.EMAIL_HOST_USER],
+                fail_silently=False,
+            )
             
             user_profile.save()
             investment.save()
