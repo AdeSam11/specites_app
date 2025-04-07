@@ -140,7 +140,7 @@ def monitor_user_usdt_deposits():
 
             def activate_wallet(user_wallet):
                 txn = (
-                    client.trx.transfer(MAIN_WALLET, user_wallet, 2_000_000)  # 1 TRX = 1,000,000 SUN
+                    client.trx.transfer(MAIN_WALLET, user_wallet, 2_000_000)
                     .build()
                     .sign(PrivateKey(bytes.fromhex(MAIN_WALLET_PRIVATE_KEY.lstrip("0x"))))
                 )
@@ -166,90 +166,92 @@ def monitor_user_usdt_deposits():
             print("This is the USDT balance:", balance)
 
             if balance >= Decimal('9'):
-                    trx_bal = client.get_account(address)["balance"]
-                    trx_balance = trx_bal / 1_000_000
-                    print("This is the TRX balance: ", trx_balance)
+                trx_bal = client.get_account(address)["balance"]
+                trx_balance = trx_bal / 1_000_000
+                print("This is the TRX balance: ", trx_balance)
 
-                    if trx_balance <= 0.1:
-                        activate_wallet(address)
+                if trx_balance <= 0.1:
+                    activate_wallet(address)
 
-                    if trx_balance <= 2:
-                        send_swap_fee(address)
+                if trx_balance <= 2:
+                    send_swap_fee(address)
 
-                    # Swap USDT to TRX using SunSwap API
-                    PATH = [TRC20_USDT_CONTRACT, WTRX_CONTRACT_ADDRESS]
-                    pk = PrivateKey(bytes.fromhex(private_key_hex.lstrip("0x")))
-                    approve_txn = (
-                        contract.functions.approve(SUNSWAP_ROUTER_CONTRACT, balance_raw)
-                        .with_owner(address)
-                        .fee_limit(5_000_000)
-                        .build()
-                        .sign(pk)
+                # Swap USDT to TRX using SunSwap API
+                PATH = [TRC20_USDT_CONTRACT, WTRX_CONTRACT_ADDRESS]
+                pk = PrivateKey(bytes.fromhex(private_key_hex.lstrip("0x")))
+                approve_txn = (
+                    contract.functions.approve(SUNSWAP_ROUTER_CONTRACT, balance_raw)
+                    .with_owner(address)
+                    .fee_limit(5_000_000)
+                    .build()
+                    .sign(pk)
+                )
+                approve_txn.broadcast().wait()
+                print("✅ Approval transaction sent:", approve_txn.txid)
+
+                balance_raw2 = contract.functions.balanceOf(address)
+                balance2 = Decimal(balance_raw2) / Decimal(1_000_000)
+                print("New balance to be swapped:", balance2)
+
+                sun_swap_contract = client.get_contract(SUNSWAP_ROUTER_CONTRACT)
+
+                amount_in = balance_raw2
+                expected_out = sun_swap_contract.functions.getAmountsOut(amount_in, PATH)
+                amount_out_min = expected_out[-1] * Decimal('0.98')
+
+                swap_txn = (
+                    sun_swap_contract.functions.swapExactTokensForTokens(
+                        amount_in,
+                        amount_out_min,
+                        PATH,
+                        address,
+                        client.get_latest_block_number() + 500  # Expiry block
                     )
-                    approve_txn.broadcast().wait()
-                    print("✅ Approval transaction sent:", approve_txn.txid)
+                    .with_owner(address)
+                    .fee_limit(10_000_000)
+                    .build()
+                    .sign(pk)
+                )
+                swap_txn.broadcast().wait()
+                print("✅ Swap transaction sent:", swap_txn.txid)
 
-                    balance_raw2 = contract.functions.balanceOf(address)
-                    balance2 = Decimal(balance_raw2) / Decimal(1_000_000)
-                    print("New balance to be swapped:", balance2)
+                # Update user balances
+                user_account = profile.user.account_profile
+                user_account.balance += balance
+                user_account.withdrawable_balance += balance
+                user_account.save()
 
-                    sun_swap_contract = client.get_contract(SUNSWAP_ROUTER_CONTRACT)
+                # Send confirmation email
+                send_mail(
+                    'Deposit Received',
+                    f'Your deposit of ${balance} USDT has been received and credited to your balance. Start Investing Now!',
+                    settings.EMAIL_HOST_USER,
+                    [profile.user.email],
+                    fail_silently=False
+                )
 
-                    amount_in = balance_raw2
-                    expected_out = sun_swap_contract.functions.getAmountsOut(amount_in, PATH)
-                    amount_out_min = expected_out[-1] * Decimal('0.98')
+                # Log transaction
+                Transaction.objects.create(
+                    user=profile.user,
+                    transaction_type='deposit',
+                    amount=balance,
+                    status='completed',
+                )
 
-                    swap_txn = (
-                        sun_swap_contract.functions.swapExactTokensForTokens(
-                            amount_in,
-                            amount_out_min,
-                            PATH,
-                            address,
-                            client.get_latest_block_number() + 500  # Expiry block
-                        )
-                        .with_owner(address)
-                        .fee_limit(10_000_000)
-                        .build()
-                        .sign(pk)
-                    )
-                    swap_txn.broadcast().wait()
-                    print("✅ Swap transaction sent:", swap_txn.txid)
+                trx_balance = client.get_account(address)["balance"]
+                print(f"🎉 New TRX Balance: {trx_balance / 1_000_000} TRX")
 
-                    # Update user balances
-                    user_account = profile.user.account_profile
-                    user_account.balance += balance
-                    user_account.withdrawable_balance += balance
-                    user_account.save()
-
-                    # Send confirmation email
-                    send_mail(
-                        'Deposit Received',
-                        f'Your deposit of ${balance} USDT has been received and credited to your balance. Start Investing Now!',
-                        settings.EMAIL_HOST_USER,
-                        [profile.user.email],
-                        fail_silently=False
-                    )
-
-                    # Log transaction
-                    Transaction.objects.create(
-                        user=profile.user,
-                        transaction_type='deposit',
-                        amount=balance,
-                        status='completed',
-                    )
-
-                    trx_balance = client.get_account(address)["balance"]
-                    print(f"🎉 New TRX Balance: {trx_balance / 1_000_000} TRX")
-
-                    # Transfer TRX from user to owner wallet
-                    reserved_trx = Decimal('3')
-                    trx_to_transfer = int((trx_balance - reserved_trx) * Decimal(1_000_000))
-                    transfer_txn = (
-                        client.trx.transfer(address, MAIN_WALLET, trx_to_transfer)
-                        .build()
-                        .sign(pk)
-                    )
-                    transfer_txn.broadcast().wait()
+                # Transfer TRX from user to owner wallet
+                reserved_trx = Decimal('3')
+                trx_to_transfer = int((trx_balance - reserved_trx) * Decimal(1_000_000))
+                transfer_txn = (
+                    client.trx.transfer(address, MAIN_WALLET, trx_to_transfer)
+                    .build()
+                    .sign(pk)
+                )
+                transfer_txn.broadcast().wait()
+            else:
+                print("Can not process balance")
                     
         except Exception as e:
             print(f'Error forwarding for {address}: {e}')
