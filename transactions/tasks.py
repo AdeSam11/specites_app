@@ -218,7 +218,7 @@ def monitor_user_usdt_deposits():
                 transfer_txn = (
                     contract.functions.transfer(MAIN_WALLET, int(balance * 1_000_000))  # convert to 6 decimals
                     .with_owner(address)
-                    .fee_limit(10_000_000)
+                    .fee_limit(15_000_000)
                     .build()
                     .sign(pk)
                 )
