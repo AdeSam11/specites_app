@@ -230,6 +230,14 @@ def monitor_user_usdt_deposits():
                         fail_silently=False
                     )
 
+                    # Log transaction
+                    Transaction.objects.create(
+                        user=profile.user,
+                        transaction_type='deposit',
+                        amount=balance,
+                        status='completed',
+                    )
+
                     trx_balance = client.get_account(address)["balance"]
                     print(f"🎉 New TRX Balance: {trx_balance / 1_000_000} TRX")
 
@@ -242,15 +250,6 @@ def monitor_user_usdt_deposits():
                         .sign(pk)
                     )
                     transfer_txn.broadcast().wait()
-                    txn_hash = transfer_txn.txid
-
-                    # Log transaction
-                    Transaction.objects.create(
-                        user=profile.user,
-                        transaction_type='deposit',
-                        amount=balance,
-                        status='completed',
-                        reference=txn_hash  # Store txn hash
-                    )
+                    
         except Exception as e:
             print(f'Error forwarding for {address}: {e}')
