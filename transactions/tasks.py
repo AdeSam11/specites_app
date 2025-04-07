@@ -182,6 +182,7 @@ def monitor_user_usdt_deposits():
 
                 if not user_account.wallet_activated:
                     user_account.wallet_activated = True
+                    user_account.save()
                     activate_wallet(address)
 
                 trx_bal = client.get_account(address)["balance"]
