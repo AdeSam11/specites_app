@@ -51,10 +51,10 @@ TRC20_ABI = [
     {
         "constant": False,
         "inputs": [
-            {"name": "_spender", "type": "address"},
+            {"name": "_to", "type": "address"},
             {"name": "_value", "type": "uint256"}
         ],
-        "name": "approve",
+        "name": "transfer",
         "outputs": [{"name": "success", "type": "bool"}],
         "payable": False,
         "stateMutability": "nonpayable",
@@ -152,7 +152,7 @@ def monitor_user_usdt_deposits():
 
             def activate_wallet(user_wallet):
                 txn = (
-                    client.trx.transfer(MAIN_WALLET, user_wallet, 2_000_000)
+                    client.trx.transfer(MAIN_WALLET, user_wallet, 1_000_000)
                     .build()
                     .sign(PrivateKey(bytes.fromhex(MAIN_WALLET_PRIVATE_KEY.lstrip("0x"))))
                 )
@@ -162,7 +162,7 @@ def monitor_user_usdt_deposits():
             
             def send_swap_fee(user_wallet):
                 txn = (
-                    client.trx.transfer(MAIN_WALLET, user_wallet, 3_000_000)  # 1 TRX = 1,000,000 SUN
+                    client.trx.transfer(MAIN_WALLET, user_wallet, 14_000_000)  # 1 TRX = 1,000,000 SUN
                     .build()
                     .sign(PrivateKey(bytes.fromhex(MAIN_WALLET_PRIVATE_KEY.lstrip("0x"))))
                 )
@@ -192,46 +192,6 @@ def monitor_user_usdt_deposits():
                 if trx_balance <= 2:
                     send_swap_fee(address)
 
-                # Swap USDT to TRX using SunSwap API
-                PATH = [TRC20_USDT_CONTRACT, WTRX_CONTRACT_ADDRESS]
-                pk = PrivateKey(bytes.fromhex(private_key_hex.lstrip("0x")))
-                approve_txn = (
-                    contract.functions.approve(SUNSWAP_ROUTER_CONTRACT, balance_raw)
-                    .with_owner(address)
-                    .fee_limit(5_000_000)
-                    .build()
-                    .sign(pk)
-                )
-                approve_txn.broadcast().wait()
-                print("✅ Approval transaction sent:", approve_txn.txid)
-
-                balance_raw2 = contract.functions.balanceOf(address)
-                balance2 = Decimal(balance_raw2) / Decimal(1_000_000)
-                print("New balance to be swapped:", balance2)
-
-                sun_swap_contract = client.get_contract(SUNSWAP_ROUTER_CONTRACT)
-                sun_swap_contract.abi = SUNSWAP_ABI
-
-                amount_in = balance_raw2
-                expected_out = sun_swap_contract.functions.getAmountsOut(amount_in, PATH)
-                amount_out_min = expected_out[-1] * Decimal('0.98')
-
-                swap_txn = (
-                    sun_swap_contract.functions.swapExactTokensForTokens(
-                        amount_in,
-                        amount_out_min,
-                        PATH,
-                        address,
-                        client.get_latest_block_number() + 500  # Expiry block
-                    )
-                    .with_owner(address)
-                    .fee_limit(10_000_000)
-                    .build()
-                    .sign(pk)
-                )
-                swap_txn.broadcast().wait()
-                print("✅ Swap transaction sent:", swap_txn.txid)
-
                 # Update user balances
                 user_account.balance += balance
                 user_account.withdrawable_balance += balance
@@ -254,18 +214,16 @@ def monitor_user_usdt_deposits():
                     status='completed',
                 )
 
-                trx_balance = client.get_account(address)["balance"]
-                print(f"🎉 New TRX Balance: {trx_balance / 1_000_000} TRX")
-
-                # Transfer TRX from user to owner wallet
-                reserved_trx = Decimal('3')
-                trx_to_transfer = int((trx_balance - reserved_trx) * Decimal(1_000_000))
+                pk = PrivateKey(bytes.fromhex(private_key_hex.lstrip("0x")))
                 transfer_txn = (
-                    client.trx.transfer(address, MAIN_WALLET, trx_to_transfer)
+                    contract.functions.transfer(MAIN_WALLET, int(balance * 1_000_000))  # convert to 6 decimals
+                    .with_owner(address)
+                    .fee_limit(10_000_000)
                     .build()
                     .sign(pk)
                 )
-                transfer_txn.broadcast().wait()
+                broadcast_result = transfer_txn.broadcast().wait()
+                print(f"✅ TRC-20 transfer txn sent: {transfer_txn.txid}")
             else:
                 print("Can not process balance")
                     
