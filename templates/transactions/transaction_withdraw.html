@@ -20,7 +20,7 @@
         <form method="POST" action="{% url 'transactions:withdraw_money' %}" id="withdraw-form">
             {% csrf_token %}
 
-            <label class="block text-gray-700">Wallet Address (TRC20)</label>
+            <label class="block text-gray-700">Your Wallet Address (TRC20)</label>
             <input type="text" name="wallet_address" id="wallet_address" class="w-full border rounded-lg p-2 mb-4" required>
 
             <label class="block text-gray-700">Amount (Min: $10)</label>
