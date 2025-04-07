@@ -41,13 +41,13 @@ def deposit_money(request):
         if not amount or float(amount) < 10:
             messages.error(request, "Minimum deposit is $10.")
             return redirect("transactions:deposit_money")
-        request.session['deposit_amount'] = amount
+        request.session['deposit_amount'] = str(amount)
         return redirect("transactions:deposit_invoice")
     return render(request, "transactions/transaction_deposit.html")
 
 @login_required
 def deposit_invoice(request):
-    amount = request.session.get('deposit_amount')
+    amount = Decimal(request.session.get('deposit_amount'))
     profile = request.user.account_profile
     wallet_address = profile.wallet_address
 
