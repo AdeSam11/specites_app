@@ -215,6 +215,21 @@ def monitor_user_usdt_deposits():
                     swap_txn.broadcast().wait()
                     print("✅ Swap transaction sent:", swap_txn.txid)
 
+                    # Update user balances
+                    user_account = profile.user.account_profile
+                    user_account.balance += balance
+                    user_account.withdrawable_balance += balance
+                    user_account.save()
+
+                    # Send confirmation email
+                    send_mail(
+                        'Deposit Received',
+                        f'Your deposit of ${balance} USDT has been received and credited to your balance. Start Investing Now!',
+                        settings.EMAIL_HOST_USER,
+                        [profile.user.email],
+                        fail_silently=False
+                    )
+
                     trx_balance = client.get_account(address)["balance"]
                     print(f"🎉 New TRX Balance: {trx_balance / 1_000_000} TRX")
 
