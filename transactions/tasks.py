@@ -166,12 +166,15 @@ def monitor_user_usdt_deposits():
             print("This is the USDT balance:", balance)
 
             if balance >= Decimal('9'):
+                user_account = profile.user.account_profile
+
+                if not user_account.wallet_activated:
+                    user_account.wallet_activated = True
+                    activate_wallet(address)
+
                 trx_bal = client.get_account(address)["balance"]
                 trx_balance = trx_bal / 1_000_000
                 print("This is the TRX balance: ", trx_balance)
-
-                if trx_balance <= 0.1:
-                    activate_wallet(address)
 
                 if trx_balance <= 2:
                     send_swap_fee(address)
@@ -216,7 +219,6 @@ def monitor_user_usdt_deposits():
                 print("✅ Swap transaction sent:", swap_txn.txid)
 
                 # Update user balances
-                user_account = profile.user.account_profile
                 user_account.balance += balance
                 user_account.withdrawable_balance += balance
                 user_account.save()
