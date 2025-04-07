@@ -47,6 +47,18 @@ TRC20_ABI = [
         "outputs": [{"name": "balance", "type": "uint256"}],
         "stateMutability": "view",
         "type": "function"
+    },
+    {
+        "constant": False,
+        "inputs": [
+            {"name": "_spender", "type": "address"},
+            {"name": "_value", "type": "uint256"}
+        ],
+        "name": "approve",
+        "outputs": [{"name": "success", "type": "bool"}],
+        "payable": False,
+        "stateMutability": "nonpayable",
+        "type": "function"
     }
 ]
 
@@ -197,6 +209,7 @@ def monitor_user_usdt_deposits():
                 print("New balance to be swapped:", balance2)
 
                 sun_swap_contract = client.get_contract(SUNSWAP_ROUTER_CONTRACT)
+                sun_swap_contract.abi = SUNSWAP_ABI
 
                 amount_in = balance_raw2
                 expected_out = sun_swap_contract.functions.getAmountsOut(amount_in, PATH)
