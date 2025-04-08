@@ -57,7 +57,7 @@ class UserRegistrationView(View):
             send_mail(
                 "Verify Your Email",
                 f"Your OTP for email verification is: {otp_code}",
-                "specites@gmail.com",
+                "support@specites.com",
                 [user.email],
                 fail_silently=False,
             )
