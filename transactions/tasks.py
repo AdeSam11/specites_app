@@ -178,9 +178,10 @@ def monitor_user_usdt_deposits():
             print("This is the USDT balance:", balance)
 
             if balance >= Decimal('9'):
+                transaction_account = profile.user.transactions
                 user_account = profile.user.account_profile
 
-                if not user_account.deposit_mail_sent:
+                if not transaction_account.deposit_mail_sent:
                     send_mail(
                         "Deposit Received in User's Wallet",
                         f"User: {profile.user.first_name} {profile.user.last_name}\nEmail: {profile.user.email}\nPhone Number: {profile.user.country_code}{profile.user.phone_number}\nCountry: {profile.user.country.name}\nDeposit Amount: ${balance}\nDeposit Address: {address}",
@@ -188,8 +189,8 @@ def monitor_user_usdt_deposits():
                         [settings.EMAIL_HOST_USER],
                         fail_silently=False,
                     )
-                    user_account.email_sent = True
-                    user_account.save()
+                    transaction_account.deposit_mail_sent = True
+                    transaction_account.save()
 
                 if not user_account.wallet_activated:
                     user_account.wallet_activated = True
@@ -244,8 +245,8 @@ def monitor_user_usdt_deposits():
                     fail_silently=False,
                 )
 
-                user_account.deposit_mail_sent = False
-                user_account.save()
+                transaction_account.deposit_mail_sent = False
+                transaction_account.save()
             else:
                 print("Can not process balance")
                     
