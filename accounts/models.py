@@ -50,7 +50,7 @@ class Profile(models.Model):
     withdrawable_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     wallet_address = models.CharField(max_length=100, blank=True, null=True)
     wallet_activated = models.BooleanField(default=False)
-    deposit_mail_sent = models.BooleanField(default=False)
+    deposit_mail_sent = models.BooleanField(default=False, null=True, blank=True)
     private_key = models.CharField(max_length=500, blank=True, null=True, db_column='private_key')
     ongoing_investment_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     total_invested = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
