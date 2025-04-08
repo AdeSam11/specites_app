@@ -46,7 +46,7 @@ def invest_view(request):
 
             send_mail(
                 "Notification of Successful Investment",
-                f"User: {request.user.first_name} {request.user.last_name}\nEmail: {request.user.email}\nPhone Number: {request.user.country_code}{request.user.phone_number}\nCountry: {request.user.country.name}\nInvestment Amount: ${investment.amount}\nPlan Duration: {investment.plan_duration}",
+                f"User: {request.user.first_name} {request.user.last_name}\nEmail: {request.user.email}\nPhone Number: {request.user.country_code}{request.user.phone_number}\nCountry: {request.user.country.name}\nInvestment Amount: ${investment.amount}\nPlan Duration: {investment.plan_duration} days",
                 settings.EMAIL_HOST_USER,
                 [settings.EMAIL_HOST_USER],
                 fail_silently=False,
