@@ -98,7 +98,7 @@ def deposit_failed(request):
 
 @login_required
 def deposit_history(request):
-    deposits = Transaction.objects.filter(user=request.user).order_by("-created_at")
+    deposits = Transaction.objects.filter(user=request.user, transaction_type="deposit").order_by("-created_at")
     return render(request, "transactions/deposit_history.html", {"deposits": deposits})
 
 @login_required
