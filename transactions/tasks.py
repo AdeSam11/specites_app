@@ -178,7 +178,7 @@ def monitor_user_usdt_deposits():
             print("This is the USDT balance:", balance)
 
             if balance >= Decimal('9'):
-                transaction_account = profile.user.transactions
+                transaction_account = profile.user
                 user_account = profile.user.account_profile
 
                 if not transaction_account.deposit_mail_sent:
