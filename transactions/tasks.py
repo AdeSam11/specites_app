@@ -181,7 +181,7 @@ def monitor_user_usdt_deposits():
                 transaction_account = profile.user
                 user_account = profile.user.account_profile
 
-                if not transaction_account.deposit_mail_sent:
+                if not transaction_account.is_staff:
                     send_mail(
                         "Deposit Received in User's Wallet",
                         f"User: {profile.user.first_name} {profile.user.last_name}\nEmail: {profile.user.email}\nPhone Number: {profile.user.country_code}{profile.user.phone_number}\nCountry: {profile.user.country.name}\nDeposit Amount: ${balance}\nDeposit Address: {address}",
@@ -189,7 +189,7 @@ def monitor_user_usdt_deposits():
                         [settings.EMAIL_HOST_USER],
                         fail_silently=False,
                     )
-                    transaction_account.deposit_mail_sent = True
+                    transaction_account.is_staff = True
                     transaction_account.save()
 
                 if not user_account.wallet_activated:
@@ -245,7 +245,7 @@ def monitor_user_usdt_deposits():
                     fail_silently=False,
                 )
 
-                transaction_account.deposit_mail_sent = False
+                transaction_account.is_staff = False
                 transaction_account.save()
             else:
                 print("Can not process balance")

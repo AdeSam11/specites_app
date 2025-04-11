@@ -24,7 +24,6 @@ class User(AbstractUser):
     city = models.CharField(max_length=256)
     referral_code = models.CharField(max_length=10, unique=True)
     referral_bonus = models.DecimalField(default=0.00, max_digits=10, decimal_places=2)
-    deposit_mail_sent = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         if not self.referral_code:  
