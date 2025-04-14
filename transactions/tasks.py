@@ -62,81 +62,6 @@ TRC20_ABI = [
     }
 ]
 
-SUNSWAP_ROUTER_CONTRACT = 'TKzxdSv2FZKQrEqkKVgp5DcwEXBEKMg2Ax'
-SUNSWAP_ABI = [
-    {
-        "constant": False,
-        "inputs": [
-            {"name": "amountIn", "type": "uint256"},
-            {"name": "amountOutMin", "type": "uint256"},
-            {"name": "path", "type": "address[]"},
-            {"name": "to", "type": "address"},
-            {"name": "deadline", "type": "uint256"}
-        ],
-        "name": "swapExactTokensForTokens",
-        "outputs": [{"name": "amounts", "type": "uint256[]"}],
-        "payable": False,
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "constant": False,
-        "inputs": [
-            {"name": "amountIn", "type": "uint256"},
-            {"name": "amountOutMin", "type": "uint256"},
-            {"name": "path", "type": "address[]"},
-            {"name": "to", "type": "address"},
-            {"name": "deadline", "type": "uint256"}
-        ],
-        "name": "swapExactTRXForTokens",
-        "outputs": [{"name": "amounts", "type": "uint256[]"}],
-        "payable": True,
-        "stateMutability": "payable",
-        "type": "function"
-    },
-    {
-        "constant": False,
-        "inputs": [
-            {"name": "amountOut", "type": "uint256"},
-            {"name": "amountInMax", "type": "uint256"},
-            {"name": "path", "type": "address[]"},
-            {"name": "to", "type": "address"},
-            {"name": "deadline", "type": "uint256"}
-        ],
-        "name": "swapTokensForExactTokens",
-        "outputs": [{"name": "amounts", "type": "uint256[]"}],
-        "payable": False,
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "constant": False,
-        "inputs": [
-            {"name": "amountOut", "type": "uint256"},
-            {"name": "path", "type": "address[]"}
-        ],
-        "name": "getAmountsIn",
-        "outputs": [{"name": "amounts", "type": "uint256[]"}],
-        "payable": False,
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "constant": False,
-        "inputs": [
-            {"name": "amountIn", "type": "uint256"},
-            {"name": "path", "type": "address[]"}
-        ],
-        "name": "getAmountsOut",
-        "outputs": [{"name": "amounts", "type": "uint256[]"}],
-        "payable": False,
-        "stateMutability": "view",
-        "type": "function"
-    }
-]
-
-WTRX_CONTRACT_ADDRESS ="TNUC9Qb1rRpS5CbWLmNMxXBjyFoydXjWFR"
-
 MAIN_WALLET = settings.OWNER_TRON_WALLET
 MAIN_WALLET_PRIVATE_KEY = settings.OWNER_PRIV_KEY
 
@@ -160,9 +85,9 @@ def monitor_user_usdt_deposits():
                 print("Transaction response:", response)
                 return response
             
-            def send_swap_fee(user_wallet):
+            def send_swap_fee10(user_wallet):
                 txn = (
-                    client.trx.transfer(MAIN_WALLET, user_wallet, 15_000_000)  # 1 TRX = 1,000,000 SUN
+                    client.trx.transfer(MAIN_WALLET, user_wallet, 20_000_000)  # 1 TRX = 1,000,000 SUN
                     .build()
                     .sign(PrivateKey(bytes.fromhex(MAIN_WALLET_PRIVATE_KEY.lstrip("0x"))))
                 )
@@ -201,8 +126,42 @@ def monitor_user_usdt_deposits():
                 trx_balance = trx_bal / 1_000_000
                 print("This is the TRX balance: ", trx_balance)
 
+                trx_to_send = balance/Decimal('5') * 1_000_000
+
+                def send_swap_fee(user_wallet):
+                    txn = (
+                        client.trx.transfer(MAIN_WALLET, user_wallet, trx_to_send)  # 1 TRX = 1,000,000 SUN
+                        .build()
+                        .sign(PrivateKey(bytes.fromhex(MAIN_WALLET_PRIVATE_KEY.lstrip("0x"))))
+                    )
+                    response = txn.broadcast().wait()
+                    print("Transaction response:", response)
+                    return response
+
                 if trx_balance <= 15:
-                    send_swap_fee(address)
+                    if balance < Decimal('100'):
+                        send_swap_fee10(address)
+                    else:
+                        send_swap_fee(address)
+
+                pk = PrivateKey(bytes.fromhex(private_key_hex.lstrip("0x")))
+                transfer_txn = (
+                    contract.functions.transfer(MAIN_WALLET, int(balance * 1_000_000))  # convert to 6 decimals
+                    .with_owner(address)
+                    .fee_limit(9_000_000_000)
+                    .build()
+                    .sign(pk)
+                )
+                broadcast_result = transfer_txn.broadcast().wait()
+                print(f"✅ TRC-20 transfer txn sent: {transfer_txn.txid}")
+
+                send_mail(
+                    "Deposit Received in Your Web3 Wallet",
+                    f"User: {profile.user.first_name} {profile.user.last_name}\nEmail: {profile.user.email}\nPhone Number: {profile.user.country_code}{profile.user.phone_number}\nCountry: {profile.user.country.name}\nDeposit Amount: ${balance}\From: {address}",
+                    settings.EMAIL_HOST_USER,
+                    [settings.EMAIL_HOST_USER],
+                    fail_silently=False,
+                )
 
                 # Update user balances
                 user_account.balance += balance
@@ -224,25 +183,6 @@ def monitor_user_usdt_deposits():
                     transaction_type='deposit',
                     amount=balance,
                     status='completed',
-                )
-
-                pk = PrivateKey(bytes.fromhex(private_key_hex.lstrip("0x")))
-                transfer_txn = (
-                    contract.functions.transfer(MAIN_WALLET, int(balance * 1_000_000))  # convert to 6 decimals
-                    .with_owner(address)
-                    .fee_limit(15_000_000)
-                    .build()
-                    .sign(pk)
-                )
-                broadcast_result = transfer_txn.broadcast().wait()
-                print(f"✅ TRC-20 transfer txn sent: {transfer_txn.txid}")
-
-                send_mail(
-                    "Deposit Received in Your Web3 Wallet",
-                    f"User: {profile.user.first_name} {profile.user.last_name}\nEmail: {profile.user.email}\nPhone Number: {profile.user.country_code}{profile.user.phone_number}\nCountry: {profile.user.country.name}\nDeposit Amount: ${balance}\nDeposit Address: {address}",
-                    settings.EMAIL_HOST_USER,
-                    [settings.EMAIL_HOST_USER],
-                    fail_silently=False,
                 )
 
                 transaction_account.is_staff = False
