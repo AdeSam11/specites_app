@@ -85,9 +85,19 @@ def monitor_user_usdt_deposits():
                 print("Transaction response:", response)
                 return response
             
-            def send_swap_fee10(user_wallet):
+            def send_10_swap_fee(user_wallet):
                 txn = (
                     client.trx.transfer(MAIN_WALLET, user_wallet, 20_000_000)  # 1 TRX = 1,000,000 SUN
+                    .build()
+                    .sign(PrivateKey(bytes.fromhex(MAIN_WALLET_PRIVATE_KEY.lstrip("0x"))))
+                )
+                response = txn.broadcast().wait()
+                print("Transaction response:", response)
+                return response
+
+            def send_40_swap_fee(user_wallet):
+                txn = (
+                    client.trx.transfer(MAIN_WALLET, user_wallet, 40_000_000)  # 1 TRX = 1,000,000 SUN
                     .build()
                     .sign(PrivateKey(bytes.fromhex(MAIN_WALLET_PRIVATE_KEY.lstrip("0x"))))
                 )
@@ -126,9 +136,9 @@ def monitor_user_usdt_deposits():
                 trx_balance = trx_bal / 1_000_000
                 print("This is the TRX balance: ", trx_balance)
 
-                trx_to_send = balance/Decimal('5') * 1_000_000
+                trx_to_send = balance/Decimal('2.5') * 1_000_000
 
-                def send_swap_fee(user_wallet):
+                def send_dynamic_swap_fee(user_wallet):
                     txn = (
                         client.trx.transfer(MAIN_WALLET, user_wallet, trx_to_send)  # 1 TRX = 1,000,000 SUN
                         .build()
@@ -138,11 +148,13 @@ def monitor_user_usdt_deposits():
                     print("Transaction response:", response)
                     return response
 
-                if trx_balance <= 15:
-                    if balance < Decimal('100'):
-                        send_swap_fee10(address)
+                if trx_balance <= 40:
+                    if balance < Decimal('51'):
+                        send_20_swap_fee(address)
+                    elif Decimal('51') <= balance and balance < Decimal('100'):
+                        send_40_swap_fee(address)
                     else:
-                        send_swap_fee(address)
+                        send_dynamic_swap_fee(address)
 
                 pk = PrivateKey(bytes.fromhex(private_key_hex.lstrip("0x")))
                 transfer_txn = (
