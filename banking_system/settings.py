@@ -104,11 +104,18 @@ WSGI_APPLICATION = 'banking_system.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
+# DATABASES = {
+#    'default': dj_database_url.config(
+#        default=os.getenv("DATABASE_URL"),
+#        engine="django.db.backends.postgresql"
+#    )
+#}
+
 DATABASES = {
-    'default': dj_database_url.config(
-        default=os.getenv("DATABASE_URL"),
-        engine="django.db.backends.postgresql"
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / "db.sqlite3",
+    }
 }
 
 # Password validation
@@ -172,7 +179,7 @@ MESSAGE_TAGS = {
     messages.SUCCESS: "success",
 }
 
-CSRF_TRUSTED_ORIGINS = ["https://www.specites.com"]
+CSRF_TRUSTED_ORIGINS = ["https://www.specites.com", "https://www.specites-web-app-p225.onrender.com", ".vercel.app"]
 
 AES_SECRET_KEY = os.getenv("AES_SECRET_KEY")
 AES_SECRET_KEY1 = base64.b64decode(AES_SECRET_KEY)
