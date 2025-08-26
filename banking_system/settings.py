@@ -27,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 
@@ -179,7 +179,9 @@ MESSAGE_TAGS = {
     messages.SUCCESS: "success",
 }
 
-CSRF_TRUSTED_ORIGINS = ["https://www.specites.com", "https://www.specites-web-app-p225.onrender.com", ".vercel.app"]
+CSRF_TRUSTED_ORIGINS = ["https://www.specites.com", "https://www.specites-web-app-p225.onrender.com", "https://www.specites-app.vercel.app"]
 
 AES_SECRET_KEY = os.getenv("AES_SECRET_KEY")
 AES_SECRET_KEY1 = base64.b64decode(AES_SECRET_KEY)
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

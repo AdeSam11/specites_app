@@ -48,7 +48,7 @@ class Transaction(models.Model):
     transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPES)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES)
-    reference = models.CharField(blank=True, null=True)
+    reference = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
